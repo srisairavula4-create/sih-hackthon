@@ -92,25 +92,13 @@ export const Navbar = ({
             <button
               onClick={() => setCurrentView('timeline')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                currentView === 'timeline'
+                currentView === 'timeline' || currentView === 'ai-summary'
                   ? 'bg-white text-emerald-700 shadow-xs font-semibold'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
               }`}
             >
               <Clock className="w-3.5 h-3.5" />
               Timeline
-            </button>
-
-            <button
-              onClick={() => setCurrentView('ai-summary')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                currentView === 'ai-summary'
-                  ? 'bg-white text-emerald-700 shadow-xs font-semibold'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
-              }`}
-            >
-              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-              AI Clinical Summary
             </button>
           </nav>
 

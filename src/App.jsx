@@ -94,8 +94,23 @@ export default function App() {
   // Persistent AI Clinical Summary
   const [aiSummary, setAiSummary] = useState(() => {
     try {
-      const saved = localStorage.getItem('ayurvaidya_summary_v3');
-      if (saved) return JSON.parse(saved);
+      const saved = localStorage.getItem('ayurvaidya_summary_v5') || localStorage.getItem('ayurvaidya_summary_v3');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          ...INITIAL_AI_SUMMARY,
+          ...parsed,
+          stomachSummary: { ...INITIAL_AI_SUMMARY.stomachSummary, ...(parsed.stomachSummary || {}) },
+          chestSummary: { ...INITIAL_AI_SUMMARY.chestSummary, ...(parsed.chestSummary || {}) },
+          rogaNidana: { ...INITIAL_AI_SUMMARY.rogaNidana, ...(parsed.rogaNidana || {}) },
+          pathyaApathya: { ...INITIAL_AI_SUMMARY.pathyaApathya, ...(parsed.pathyaApathya || {}) },
+          prescribedFormulations: (parsed.prescribedFormulations && parsed.prescribedFormulations.length > 0)
+            ? parsed.prescribedFormulations
+            : INITIAL_AI_SUMMARY.prescribedFormulations,
+          foodIntakeAnalysis: parsed.foodIntakeAnalysis || INITIAL_AI_SUMMARY.foodIntakeAnalysis,
+          conflicts: parsed.conflicts || INITIAL_AI_SUMMARY.conflicts
+        };
+      }
     } catch (e) {}
     return INITIAL_AI_SUMMARY;
   });
@@ -429,7 +444,7 @@ export default function App() {
       };
 
       try {
-        localStorage.setItem('ayurvaidya_summary_v3', JSON.stringify(refreshed));
+        localStorage.setItem('ayurvaidya_summary_v5', JSON.stringify(refreshed));
       } catch (e) {}
 
       return refreshed;
@@ -539,22 +554,16 @@ export default function App() {
               />
             )}
 
-            {/* View 4: Interactive Medical Timeline */}
-            {currentView === 'timeline' && (
+            {/* View 4: Interactive Medical Timeline & Integrated Clinical Summary */}
+            {(currentView === 'timeline' || currentView === 'ai-summary') && (
               <TimelineView 
                 patient={patient}
                 timeline={timeline}
                 oldRecords={oldRecords}
-                onNavigateToUpload={() => setCurrentView('upload-records')}
-              />
-            )}
-
-            {/* View 5: AI Synthesized Clinical Summary */}
-            {currentView === 'ai-summary' && (
-              <AiSummaryView 
                 aiSummary={aiSummary}
-                patient={patient}
-                foodIntake={caseData.foodIntake}
+                caseData={caseData}
+                initialTab="side-by-side"
+                onNavigateToUpload={() => setCurrentView('upload-records')}
                 onNavigateToCase={() => setCurrentView('case-taking')}
               />
             )}

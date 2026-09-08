@@ -1,4 +1,3 @@
-import { AyurvedicCaseSummaryCard } from '../components/AyurvedicCaseSummaryCard';
 import React, { useState } from 'react';
 import { 
   Sparkles, 
@@ -7,89 +6,129 @@ import {
   CheckCircle2, 
   Volume2, 
   VolumeX, 
-  Printer, 
-  Share2, 
   ArrowRight, 
   ShieldCheck, 
   Pill, 
   Flame, 
-  Droplets, 
-  Wind,
-  Check,
-  AlertCircle,
-  Utensils
+  Check, 
+  AlertCircle, 
+  Utensils 
 } from 'lucide-react';
+import { AyurvedicCaseSummaryCard } from '../components/AyurvedicCaseSummaryCard';
+import { INITIAL_AI_SUMMARY } from '../types/data';
 
 export const AiSummaryView = ({ 
   aiSummary, 
   patient, 
   foodIntake,
   onNavigateToReview,
-  onNavigateToCase
+  onNavigateToCase,
+  isEmbedded = false
 }) => {
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+
+  // Merge provided aiSummary with comprehensive INITIAL_AI_SUMMARY fallbacks
+  const summary = {
+    ...INITIAL_AI_SUMMARY,
+    ...(aiSummary || {}),
+    stomachSummary: { 
+      ...INITIAL_AI_SUMMARY.stomachSummary, 
+      ...((aiSummary && aiSummary.stomachSummary) || {}) 
+    },
+    chestSummary: { 
+      ...INITIAL_AI_SUMMARY.chestSummary, 
+      ...((aiSummary && aiSummary.chestSummary) || {}) 
+    },
+    rogaNidana: { 
+      ...INITIAL_AI_SUMMARY.rogaNidana, 
+      ...((aiSummary && aiSummary.rogaNidana) || {}) 
+    },
+    pathyaApathya: {
+      pathyaAhara: (aiSummary?.pathyaApathya?.pathyaAhara?.length) 
+        ? aiSummary.pathyaApathya.pathyaAhara 
+        : INITIAL_AI_SUMMARY.pathyaApathya.pathyaAhara,
+      pathyaVihara: (aiSummary?.pathyaApathya?.pathyaVihara?.length) 
+        ? aiSummary.pathyaApathya.pathyaVihara 
+        : INITIAL_AI_SUMMARY.pathyaApathya.pathyaVihara,
+      apathyaAhara: (aiSummary?.pathyaApathya?.apathyaAhara?.length) 
+        ? aiSummary.pathyaApathya.apathyaAhara 
+        : INITIAL_AI_SUMMARY.pathyaApathya.apathyaAhara,
+      apathyaVihara: (aiSummary?.pathyaApathya?.apathyaVihara?.length) 
+        ? aiSummary.pathyaApathya.apathyaVihara 
+        : INITIAL_AI_SUMMARY.pathyaApathya.apathyaVihara
+    },
+    prescribedFormulations: (aiSummary?.prescribedFormulations?.length)
+      ? aiSummary.prescribedFormulations
+      : INITIAL_AI_SUMMARY.prescribedFormulations,
+    foodIntakeAnalysis: (aiSummary?.foodIntakeAnalysis)
+      ? aiSummary.foodIntakeAnalysis
+      : INITIAL_AI_SUMMARY.foodIntakeAnalysis,
+    conflicts: (aiSummary?.conflicts?.length)
+      ? aiSummary.conflicts
+      : INITIAL_AI_SUMMARY.conflicts
+  };
 
   const toggleAudio = () => {
     setIsPlayingAudio(!isPlayingAudio);
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 pb-12 animate-fadeIn">
+    <div className={`space-y-6 animate-fadeIn ${isEmbedded ? 'w-full' : 'max-w-5xl mx-auto pb-12'}`}>
       
       {/* Top Banner */}
-      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 rounded-3xl p-6 sm:p-8 text-white shadow-md relative overflow-hidden">
-        {/* Subtle decorative emblem in background */}
-        <div className="absolute right-4 -bottom-6 opacity-10 pointer-events-none">
-          <Sparkles className="w-48 h-48 text-white" />
-        </div>
+      {!isEmbedded && (
+        <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 rounded-3xl p-6 sm:p-8 text-white shadow-md relative overflow-hidden">
+          <div className="absolute right-4 -bottom-6 opacity-10 pointer-events-none">
+            <Sparkles className="w-48 h-48 text-white" />
+          </div>
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-white/20 backdrop-blur-xs text-white border border-white/30">
-                AI Multimodal Synthesis
-              </span>
-              <span className="text-xs text-emerald-100">
-                Generated: {aiSummary.generatedAt}
-              </span>
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-white/20 backdrop-blur-xs text-white border border-white/30">
+                  AI Multimodal Synthesis
+                </span>
+                <span className="text-xs text-emerald-100">
+                  Generated: {summary.generatedAt || 'Today, 10:45 AM'}
+                </span>
+              </div>
+              <h1 className="text-xl sm:text-2xl font-black tracking-tight font-outfit">
+                Comprehensive Ayurvedic Clinical Summary & Treatment Protocol
+              </h1>
+              <p className="text-xs text-emerald-100 mt-1 max-w-2xl">
+                Synthesizing Patient Intake, Dashavidha Pariksha, Ahara-Vihara parameters, and Laboratory Biomarkers
+              </p>
             </div>
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight font-outfit">
-              Comprehensive Ayurvedic Clinical Summary & Treatment Protocol
-            </h1>
-            <p className="text-xs text-emerald-100 mt-1 max-w-2xl">
-              Synthesizing Patient Intake, Dashavidha Pariksha, Ahara-Vihara parameters, and Laboratory Biomarkers (HbA1c 7.8%)
-            </p>
-          </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Simulated Voice Readout Button */}
-            <button
-              onClick={toggleAudio}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold backdrop-blur-xs transition-all ${
-                isPlayingAudio
-                  ? 'bg-white text-emerald-800 ring-2 ring-white/80 shadow-sm animate-pulse'
-                  : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
-              }`}
-              title="Listen to AI Ayurvedic Clinical Case Readout"
-            >
-              {isPlayingAudio ? <VolumeX className="w-4 h-4 text-emerald-700" /> : <Volume2 className="w-4 h-4" />}
-              <span>{isPlayingAudio ? 'Pause Narration' : 'Listen Readout'}</span>
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={toggleAudio}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold backdrop-blur-xs transition-all ${
+                  isPlayingAudio
+                    ? 'bg-white text-emerald-800 ring-2 ring-white/80 shadow-sm animate-pulse'
+                    : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
+                }`}
+                title="Listen to AI Ayurvedic Clinical Case Readout"
+              >
+                {isPlayingAudio ? <VolumeX className="w-4 h-4 text-emerald-700" /> : <Volume2 className="w-4 h-4" />}
+                <span>{isPlayingAudio ? 'Pause Narration' : 'Listen Readout'}</span>
+              </button>
 
-            <button
-              onClick={onNavigateToReview}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-white text-emerald-800 hover:bg-emerald-50 shadow-md shadow-emerald-900/20 transition-all"
-            >
-              <Stethoscope className="w-4 h-4 text-emerald-700" />
-              Open Vaidya Portal
-              <ArrowRight className="w-4 h-4" />
-            </button>
+              <button
+                onClick={onNavigateToCase || onNavigateToReview}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-white text-emerald-800 hover:bg-emerald-50 shadow-md shadow-emerald-900/20 transition-all cursor-pointer"
+              >
+                <Stethoscope className="w-4 h-4 text-emerald-700" />
+                Vaidya Station
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Synthesis Overview Card */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs">
+      <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-xs">
         <div className="flex items-center gap-2 mb-2">
           <span className="p-1.5 rounded-lg bg-emerald-100 text-emerald-700">
             <FileText className="w-4 h-4" />
@@ -99,8 +138,77 @@ export const AiSummaryView = ({
           </h2>
         </div>
         <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
-          {aiSummary.synthesisOverview}
+          {summary.synthesisOverview || 'Comprehensive dual condition clinical evaluation and Ayurvedic synthesis.'}
         </p>
+      </div>
+
+      {/* REFRESHED NOTIFICATION BANNER (IF NEW REPORT PROCESSED) */}
+      {summary.lastRefreshedAt && (
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white shadow-xs flex flex-wrap items-center justify-between gap-3 animate-fadeIn">
+          <div className="flex items-center gap-2.5">
+            <Sparkles className="w-5 h-5 text-emerald-200 animate-pulse flex-shrink-0" />
+            <div>
+              <p className="text-xs font-black uppercase tracking-wider">
+                AI Clinical Summary Automatically Re-Processed & Refreshed
+              </p>
+              <p className="text-xs text-emerald-100">
+                Merged new clinical entities from <strong className="text-white underline">{summary.latestUpdatedDoc || 'Uploaded Document'}</strong> at {summary.lastRefreshedAt}. All historical sources preserved.
+              </p>
+            </div>
+          </div>
+          <span className="text-[11px] font-mono px-2.5 py-1 rounded-full bg-white/20 text-white border border-white/30 font-bold">
+            ✓ Synchronized
+          </span>
+        </div>
+      )}
+
+      {/* CLINICAL VARIANCE & CONFLICT REGISTRY (NO DATA OVERWRITTEN) */}
+      <div className="bg-white rounded-3xl border-2 border-amber-200/90 p-5 shadow-xs space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-amber-100">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-xl bg-amber-100 text-amber-900 font-bold">
+              <AlertCircle className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                Clinical Variance & Document Conflict Registry (Provenance Maintained)
+              </h3>
+              <p className="text-[11px] text-slate-500">
+                Multiple diagnostic parameters are flagged and reconciled across documents instead of silently overwriting existing baseline records.
+              </p>
+            </div>
+          </div>
+          <span className="text-[10px] font-mono font-bold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200 self-start sm:self-auto">
+            {summary.conflicts.length} Tracked Variances
+          </span>
+        </div>
+
+        <div className="space-y-2">
+          {summary.conflicts.map((conf) => (
+            <div key={conf.id} className="p-3 bg-amber-50/40 rounded-2xl border border-amber-200/70 text-xs space-y-1.5">
+              <div className="flex flex-wrap items-center justify-between gap-1.5">
+                <div className="flex items-center gap-2">
+                  <span className="font-extrabold text-slate-900">{conf.parameter}:</span>
+                  <span className="text-slate-600 line-through decoration-rose-400 font-mono text-[11px]">{conf.priorValue}</span>
+                  <span className="text-slate-400">→</span>
+                  <span className="font-mono font-bold text-emerald-800 bg-white px-2 py-0.5 rounded border border-emerald-200 text-[11px]">{conf.newValue}</span>
+                </div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-200">
+                  {conf.varianceType}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-[11px] text-slate-500 font-mono">
+                <div>Prior Source: <strong className="text-slate-700 font-sans">{conf.priorSource}</strong></div>
+                <div>Current Source: <strong className="text-slate-700 font-sans">{conf.newSource}</strong></div>
+              </div>
+
+              <p className="text-[11px] text-slate-700 italic pt-1 border-t border-amber-200/50">
+                Clinical Reconciliation: {conf.resolution}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* DUAL CONDITION STRUCTURED AYURVEDIC CASE SUMMARIES WITH VAIDYA DECISION MODULE */}
@@ -119,107 +227,15 @@ export const AiSummaryView = ({
           </div>
         </div>
 
-        {/* REFRESHED NOTIFICATION BANNER (IF NEW REPORT PROCESSED) */}
-        {aiSummary.lastRefreshedAt && (
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white shadow-xs flex flex-wrap items-center justify-between gap-3 animate-fadeIn">
-            <div className="flex items-center gap-2.5">
-              <Sparkles className="w-5 h-5 text-emerald-200 animate-pulse flex-shrink-0" />
-              <div>
-                <p className="text-xs font-black uppercase tracking-wider">
-                  AI Clinical Summary Automatically Re-Processed & Refreshed
-                </p>
-                <p className="text-xs text-emerald-100">
-                  Merged new clinical entities from <strong className="text-white underline">{aiSummary.latestUpdatedDoc || 'Uploaded Document'}</strong> at {aiSummary.lastRefreshedAt}. All historical sources preserved.
-                </p>
-              </div>
-            </div>
-            <span className="text-[11px] font-mono px-2.5 py-1 rounded-full bg-white/20 text-white border border-white/30 font-bold">
-              ✓ Synchronized
-            </span>
-          </div>
-        )}
-
-        {/* CLINICAL VARIANCE & CONFLICT REGISTRY (NO DATA OVERWRITTEN) */}
-        <div className="bg-white rounded-3xl border-2 border-amber-200/90 p-5 shadow-xs space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-amber-100">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-xl bg-amber-100 text-amber-900 font-bold">
-                <AlertCircle className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="text-xs font-black uppercase tracking-wider text-slate-900">
-                  Clinical Variance & Document Conflict Registry (Provenance Maintained)
-                </h3>
-                <p className="text-[11px] text-slate-500">
-                  Multiple diagnostic parameters are flagged and reconciled across documents instead of silently overwriting existing baseline records.
-                </p>
-              </div>
-            </div>
-            <span className="text-[10px] font-mono font-bold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200 self-start sm:self-auto">
-              {(aiSummary.conflicts || []).length} Tracked Variances
-            </span>
-          </div>
-
-          <div className="space-y-2">
-            {(aiSummary.conflicts || [
-              {
-                id: "CONF-01",
-                parameter: "Fasting Blood Glucose",
-                priorValue: "112 mg/dL",
-                priorSource: "AIIMS Annual Health Checkup (2023-11-18)",
-                newValue: "138 mg/dL",
-                newSource: "Max Healthcare Diagnostic Panel (2025-01-18)",
-                varianceType: "Biomarker Drift Alert",
-                resolution: "Preserved with longitudinal provenance. Glycemic escalation reflects Jatharagni Mandya rather than record contradiction.",
-                status: "Preserved with Source Attribution"
-              },
-              {
-                id: "CONF-02",
-                parameter: "Serum Triglycerides",
-                priorValue: "215 mg/dL",
-                priorSource: "Baseline Lipid Screening (2024-08-10)",
-                newValue: "192 mg/dL",
-                newSource: "Fortis Escorts Cardiology Panel (2025-01-14)",
-                varianceType: "Therapeutic Trajectory",
-                resolution: "Down-trend from 215 to 192 mg/dL demonstrates therapeutic response to Atorvastatin & Arjuna Ksheerapaka. Both values preserved.",
-                status: "Preserved with Source Attribution"
-              }
-            ]).map((conf) => (
-              <div key={conf.id} className="p-3 bg-amber-50/40 rounded-2xl border border-amber-200/70 text-xs space-y-1.5">
-                <div className="flex flex-wrap items-center justify-between gap-1.5">
-                  <div className="flex items-center gap-2">
-                    <span className="font-extrabold text-slate-900">{conf.parameter}:</span>
-                    <span className="text-slate-600 line-through decoration-rose-400 font-mono text-[11px]">{conf.priorValue}</span>
-                    <span className="text-slate-400">→</span>
-                    <span className="font-mono font-bold text-emerald-800 bg-white px-2 py-0.5 rounded border border-emerald-200 text-[11px]">{conf.newValue}</span>
-                  </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-200">
-                    {conf.varianceType}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-[11px] text-slate-500 font-mono">
-                  <div>Prior Source: <strong className="text-slate-700 font-sans">{conf.priorSource}</strong></div>
-                  <div>Current Source: <strong className="text-slate-700 font-sans">{conf.newSource}</strong></div>
-                </div>
-
-                <p className="text-[11px] text-slate-700 italic pt-1 border-t border-amber-200/50">
-                  Clinical Reconciliation: {conf.resolution}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* SIDE-BY-SIDE AYURVEDIC CASE SUMMARIES */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <AyurvedicCaseSummaryCard conditionType="stomach_pain" customSummary={aiSummary.stomachSummary} />
-          <AyurvedicCaseSummaryCard conditionType="chest_pain" customSummary={aiSummary.chestSummary} />
+          <AyurvedicCaseSummaryCard conditionType="stomach_pain" customSummary={summary.stomachSummary} />
+          <AyurvedicCaseSummaryCard conditionType="chest_pain" customSummary={summary.chestSummary} />
         </div>
       </div>
 
       {/* SECTION 1: ROGA NIDANA (AYURVEDIC ETIOPATHOGENESIS) */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs space-y-4">
+      <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-xs space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div>
             <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
@@ -232,43 +248,41 @@ export const AiSummaryView = ({
           </div>
 
           <span className="text-xs font-mono font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-            {aiSummary.rogaNidana.sadhyasadhyata}
+            {summary.rogaNidana?.sadhyasadhyata || 'Krichra Sadhya'}
           </span>
         </div>
 
         {/* Diagnosis Matrix Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          
           <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Primary Vyadhi (Disease)</p>
-            <p className="text-sm font-black text-slate-900 mt-1">{aiSummary.rogaNidana.vyadhi}</p>
+            <p className="text-sm font-black text-slate-900 mt-1">{summary.rogaNidana?.vyadhi}</p>
           </div>
 
           <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Dosha Involvement</p>
-            <p className="text-xs font-bold text-emerald-800 mt-1">{aiSummary.rogaNidana.dosha}</p>
+            <p className="text-xs font-bold text-emerald-800 mt-1">{summary.rogaNidana?.dosha}</p>
           </div>
 
           <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Dushya (Tissues Implicated)</p>
-            <p className="text-xs font-bold text-amber-800 mt-1">{aiSummary.rogaNidana.dushya}</p>
+            <p className="text-xs font-bold text-amber-800 mt-1">{summary.rogaNidana?.dushya}</p>
           </div>
 
           <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Agni State</p>
-            <p className="text-xs font-bold text-slate-800 mt-1">{aiSummary.rogaNidana.agni}</p>
+            <p className="text-xs font-bold text-slate-800 mt-1">{summary.rogaNidana?.agni}</p>
           </div>
 
           <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Ama Status (Endotoxins)</p>
-            <p className="text-xs font-bold text-rose-700 mt-1">{aiSummary.rogaNidana.ama}</p>
+            <p className="text-xs font-bold text-rose-700 mt-1">{summary.rogaNidana?.ama}</p>
           </div>
 
           <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Srotas Affected</p>
-            <p className="text-xs font-bold text-slate-800 mt-1">{aiSummary.rogaNidana.srotas}</p>
+            <p className="text-xs font-bold text-slate-800 mt-1">{summary.rogaNidana?.srotas}</p>
           </div>
-
         </div>
 
         {/* Chikitsa Sutra Banner */}
@@ -277,14 +291,14 @@ export const AiSummaryView = ({
             Chikitsa Sutra (Therapeutic Management Principle)
           </p>
           <p className="text-xs text-teal-800 leading-relaxed font-medium">
-            {aiSummary.chikitsaSutra}
+            {summary.chikitsaSutra}
           </p>
         </div>
       </div>
 
       {/* SECTION 2: AI FOOD INTAKE & DIETARY ANALYSIS (AHARA PARIKSHA) */}
-      {aiSummary.foodIntakeAnalysis && (
-        <div className="bg-white rounded-3xl border border-emerald-200/90 p-6 shadow-xs space-y-4 relative overflow-hidden">
+      {summary.foodIntakeAnalysis && (
+        <div className="bg-white rounded-3xl border border-emerald-200/90 p-5 sm:p-6 shadow-xs space-y-4 relative overflow-hidden">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
             <div>
               <div className="flex items-center gap-2">
@@ -296,7 +310,7 @@ export const AiSummaryView = ({
                 </h2>
               </div>
               <p className="text-xs text-slate-500 mt-0.5">
-                Real-time AI dietary synthesis: correlates patient's logged meals with Dosha aggravation & Dhatvagni
+                Correlates patient's logged meals with Dosha aggravation & Dhatvagni
               </p>
             </div>
 
@@ -312,21 +326,19 @@ export const AiSummaryView = ({
               Patient Logged Meals Analyzed by AI
             </p>
             <p className="text-xs font-semibold text-slate-800 leading-relaxed">
-              {aiSummary.foodIntakeAnalysis.loggedMealsSummary}
+              {summary.foodIntakeAnalysis.loggedMealsSummary}
             </p>
           </div>
 
           {/* 3-Column Analysis Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            
-            {/* Column 1: Primary Dietary Triggers */}
             <div className="p-4 rounded-2xl bg-rose-50/50 border border-rose-200 space-y-2.5">
               <div className="flex items-center gap-1.5 text-xs font-bold text-rose-800 uppercase tracking-wider">
                 <AlertCircle className="w-4 h-4 text-rose-600" />
                 Detected Ahara Triggers (Nidana)
               </div>
               <ul className="space-y-1.5">
-                {aiSummary.foodIntakeAnalysis.primaryTriggers.map((trigger, idx) => (
+                {(summary.foodIntakeAnalysis.primaryTriggers || []).map((trigger, idx) => (
                   <li key={idx} className="text-xs text-rose-950 flex items-start gap-1.5 leading-snug">
                     <span className="text-rose-500 font-bold">•</span>
                     <span>{trigger}</span>
@@ -335,40 +347,31 @@ export const AiSummaryView = ({
               </ul>
             </div>
 
-            {/* Column 2: Dosha & Tissue Impact */}
             <div className="p-4 rounded-2xl bg-amber-50/50 border border-amber-200 space-y-2.5">
               <div className="flex items-center gap-1.5 text-xs font-bold text-amber-800 uppercase tracking-wider">
                 <Flame className="w-4 h-4 text-amber-600" />
                 Agni & Dosha Impact
               </div>
               <p className="text-xs text-amber-950 leading-relaxed">
-                {aiSummary.foodIntakeAnalysis.doshaImpact}
+                {summary.foodIntakeAnalysis.doshaImpact}
               </p>
-              <div className="pt-2 border-t border-amber-200/60 text-[11px] text-amber-800">
-                <strong>Classical Principle:</strong> Guru (heavy) & Abhishyandi foods provoke Kapha, while Sheeta (cold) items extinguish Mandagni.
-              </div>
             </div>
 
-            {/* Column 3: Immediate Dietary Action Plan */}
             <div className="p-4 rounded-2xl bg-emerald-50/50 border border-emerald-200 space-y-2.5">
               <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-800 uppercase tracking-wider">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                 Corrective Diet Modification
               </div>
               <p className="text-xs text-emerald-950 leading-relaxed">
-                {aiSummary.foodIntakeAnalysis.dietaryActionPlan}
+                {summary.foodIntakeAnalysis.dietaryActionPlan}
               </p>
-              <div className="pt-2 border-t border-emerald-200/60 text-[11px] text-emerald-800">
-                <strong>Pathya Rule:</strong> Sip lukewarm water (Ushnodaka) during meals; abstain from heavy dairy at sunset.
-              </div>
             </div>
-
           </div>
         </div>
       )}
 
       {/* SECTION 3: CLASSICAL AYURVEDIC FORMULATIONS TABLE */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs space-y-4">
+      <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-xs space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div>
             <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
@@ -376,13 +379,15 @@ export const AiSummaryView = ({
               Suggested Classical Formulations (Aushadha Yojana)
             </h2>
             <p className="text-xs text-slate-500">
-              Prescribed based on Charaka Samhita Chikitsa Sthana Prameha Adhyaya
+              Evidence-based classical Ayurvedic medicinal protocol
             </p>
           </div>
-          <span className="text-xs text-slate-400">4 Active Formulations</span>
+          <span className="text-xs text-slate-400 font-mono">
+            {(summary.prescribedFormulations || []).length} Active Formulations
+          </span>
         </div>
 
-        <div className="overflow-hidden border border-slate-200 rounded-2xl">
+        <div className="overflow-x-auto border border-slate-200 rounded-2xl">
           <table className="min-w-full divide-y divide-slate-200 text-xs">
             <thead className="bg-slate-50 text-slate-600 font-semibold">
               <tr>
@@ -393,7 +398,7 @@ export const AiSummaryView = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 bg-white">
-              {aiSummary.prescribedFormulations.map((herb) => (
+              {(summary.prescribedFormulations || []).map((herb) => (
                 <tr key={herb.id} className="hover:bg-slate-50/60">
                   <td className="px-4 py-3 align-top">
                     <p className="font-bold text-slate-900 text-xs">{herb.name}</p>
@@ -419,8 +424,8 @@ export const AiSummaryView = ({
         </div>
       </div>
 
-      {/* SECTION 3: PATHYA & APATHYA (DIET & LIFESTYLE REGIMEN) */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs space-y-4">
+      {/* SECTION 4: PATHYA & APATHYA (DIET & LIFESTYLE REGIMEN) */}
+      <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-xs space-y-4">
         <div className="border-b border-slate-100 pb-3">
           <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
             Pathya & Apathya (Do's and Don'ts for Patient Compliance)
@@ -431,7 +436,6 @@ export const AiSummaryView = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          
           {/* Pathya (Recommended) */}
           <div className="p-4 rounded-2xl bg-emerald-50/50 border border-emerald-200 space-y-3">
             <div className="flex items-center gap-2 text-emerald-800 font-bold text-xs uppercase tracking-wider">
@@ -442,7 +446,7 @@ export const AiSummaryView = ({
             <div className="space-y-2">
               <p className="text-xs font-semibold text-emerald-900">Dietary (Ahara):</p>
               <ul className="space-y-1 text-xs text-slate-700">
-                {aiSummary.pathyaApathya.pathyaAhara.map((item, idx) => (
+                {(summary.pathyaApathya?.pathyaAhara || []).map((item, idx) => (
                   <li key={idx} className="flex items-start gap-1.5">
                     <Check className="w-3.5 h-3.5 text-emerald-600 mt-0.5 flex-shrink-0" />
                     <span>{item}</span>
@@ -452,7 +456,7 @@ export const AiSummaryView = ({
 
               <p className="text-xs font-semibold text-emerald-900 pt-2">Lifestyle (Vihara):</p>
               <ul className="space-y-1 text-xs text-slate-700">
-                {aiSummary.pathyaApathya.pathyaVihara.map((item, idx) => (
+                {(summary.pathyaApathya?.pathyaVihara || []).map((item, idx) => (
                   <li key={idx} className="flex items-start gap-1.5">
                     <Check className="w-3.5 h-3.5 text-emerald-600 mt-0.5 flex-shrink-0" />
                     <span>{item}</span>
@@ -472,7 +476,7 @@ export const AiSummaryView = ({
             <div className="space-y-2">
               <p className="text-xs font-semibold text-rose-900">Dietary (Ahara):</p>
               <ul className="space-y-1 text-xs text-slate-700">
-                {aiSummary.pathyaApathya.apathyaAhara.map((item, idx) => (
+                {(summary.pathyaApathya?.apathyaAhara || []).map((item, idx) => (
                   <li key={idx} className="flex items-start gap-1.5">
                     <span className="text-rose-500 font-bold text-xs mt-0.5 flex-shrink-0">✕</span>
                     <span>{item}</span>
@@ -482,7 +486,7 @@ export const AiSummaryView = ({
 
               <p className="text-xs font-semibold text-rose-900 pt-2">Lifestyle (Vihara):</p>
               <ul className="space-y-1 text-xs text-slate-700">
-                {aiSummary.pathyaApathya.apathyaVihara.map((item, idx) => (
+                {(summary.pathyaApathya?.apathyaVihara || []).map((item, idx) => (
                   <li key={idx} className="flex items-start gap-1.5">
                     <span className="text-rose-500 font-bold text-xs mt-0.5 flex-shrink-0">✕</span>
                     <span>{item}</span>
@@ -491,35 +495,35 @@ export const AiSummaryView = ({
               </ul>
             </div>
           </div>
-
         </div>
-
       </div>
 
       {/* Action Footer */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 p-5 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-2 text-xs text-slate-600">
-          <ShieldCheck className="w-4 h-4 text-emerald-600" />
-          <span>Patient Copy Generated • Ready for Registered Ayurvedic Vaidya Sign-off</span>
-        </div>
+      {!isEmbedded && (
+        <div className="bg-white rounded-3xl border border-slate-200/90 p-5 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-xs text-slate-600">
+            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <span>Patient Copy Generated • Ready for Registered Ayurvedic Vaidya Sign-off</span>
+          </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={onNavigateToCase}
-            className="px-3.5 py-2 rounded-xl text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
-          >
-            Edit Intake Form
-          </button>
-          
-          <button
-            onClick={onNavigateToReview}
-            className="flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-xs"
-          >
-            <Stethoscope className="w-4 h-4" />
-            Review in Doctor / Vaidya Station
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onNavigateToCase}
+              className="px-3.5 py-2 rounded-xl text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
+            >
+              Edit Intake Form
+            </button>
+            
+            <button
+              onClick={onNavigateToCase || onNavigateToReview}
+              className="flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-xs cursor-pointer"
+            >
+              <Stethoscope className="w-4 h-4" />
+              Doctor / Vaidya Station
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
     </div>
   );

@@ -355,5 +355,83 @@ export const INITIAL_AI_SUMMARY = {
     srotas: "Annavaha, Purishavaha, and Medovaha Srotas",
     sadhyasadhyata: "Krichra Sadhya (Manageable with Ahara-Aushadha)"
   },
-  chikitsaSutra: "Deepana-Pachana for Agni restoration, Pitta-Shamana with Vatanulomana for gastric burning, and Medohara-Hridya Rasayana for vascular clearance."
+  chikitsaSutra: "Deepana-Pachana for Agni restoration, Pitta-Shamana with Vatanulomana for gastric burning, and Medohara-Hridya Rasayana for vascular clearance.",
+  generatedAt: "Today, 10:45 AM",
+  foodIntakeAnalysis: {
+    loggedMealsSummary: "Patient Logged: Breakfast (Warm tea, idlis), Lunch (Rice, moong dal, takra), Snacks (Makhana), Dinner (2 Phulkas with bottle gourd before 8 PM)",
+    primaryTriggers: [
+      "Previous diet included sour curd & fried snacks triggering Amla-Pitta and lipid congestion.",
+      "Cold water intake during digestion reduced Jatharagni strength."
+    ],
+    doshaImpact: "Pitta-Vata aggravation in Annavaha Srotas combined with Kapha-Medo Srotorodha in Hridya.",
+    dietaryActionPlan: "Continue current light dinner before 8:00 PM. Sip warm ginger-cumin water throughout the day."
+  },
+  prescribedFormulations: [
+    {
+      id: "HERB-01",
+      name: "Sukumaram Kashayam",
+      ingredients: "Punarnava, Bilva, Eranda, Ashwagandha",
+      dose: "15 ml with 45 ml lukewarm water",
+      frequency: "Twice daily (BD)",
+      timing: "Empty stomach (Pratah / Sandhya)",
+      anupana: "Lukewarm water with cumin",
+      rationale: "Vatanulomana & Deepana; relieves epigastric burning, pacifies gastric inflammation and restores motility."
+    },
+    {
+      id: "HERB-02",
+      name: "Avipattikar Churna",
+      ingredients: "Trikatu, Triphala, Musta, Vidanga, Ela, Patra, Lavanga, Trivrit, Sharkara",
+      dose: "3 - 5 grams",
+      frequency: "Once or twice daily",
+      timing: "Post meals or before sleep",
+      anupana: "Lukewarm water or coconut water",
+      rationale: "Classical Pitta-Shamana & Virechana formulation; neutralizes excess Amla-Guna in gastric mucosa."
+    },
+    {
+      id: "HERB-03",
+      name: "Arjuna Ksheerapaka",
+      ingredients: "Terminalia arjuna bark decoction in cow milk",
+      dose: "50 ml",
+      frequency: "Once daily (Morning)",
+      timing: "Morning after light breakfast",
+      anupana: "Warm milk vehicle",
+      rationale: "Hridya & Medohara; cardioprotective, strengthens myocardium, and addresses vascular lipid deposits."
+    },
+    {
+      id: "HERB-04",
+      name: "Nisha-Amalaki Churna",
+      ingredients: "Haridra (Curcuma longa) + Amalaki (Emblica officinalis)",
+      dose: "3 grams",
+      frequency: "Twice daily (BD)",
+      timing: "Before meals",
+      anupana: "Warm water or honey",
+      rationale: "Pramehahara; stabilizes glycemic index and mitigates micro-vascular metabolic endotoxins."
+    }
+  ],
+  pathyaApathya: {
+    pathyaAhara: [
+      "Old rice (Shashtika Shali), roasted barley (Yava), and green gram (Mudga) broth",
+      "Pomegranate (Dadima), tender bottle gourd, ridge gourd, and bitter gourd",
+      "Lukewarm water boiled with cumin and dry ginger (Ushnodaka)",
+      "Fresh buttermilk (Takra) churned with roasted jeera and rock salt"
+    ],
+    pathyaVihara: [
+      "Light walking 20 minutes post meals (Shatapadi)",
+      "Dinner before 8:00 PM; minimum 2 hours interval before sleep",
+      "Practice Pranayama (Anulom-Vilom, Sheetali) to pacify stress & Pitta",
+      "Consistent sleep schedule; avoid daytime sleep (Diva-swapna)"
+    ],
+    apathyaAhara: [
+      "Sour curd (Dadhi), fermented items, vinegar, and heavy cheese",
+      "Deep-fried, oily, and excessively spicy foods (Vidahi Ahara)",
+      "Chilled water and carbonated sugary beverages with meals",
+      "Bakery items, refined flour (Maida), and late-night snacking"
+    ],
+    apathyaVihara: [
+      "Day sleep immediately following meals (Ahara-uttara Diva-swapna)",
+      "Suppression of natural urges like hunger and flatulence (Vega-dharana)",
+      "Excessive mental strain, anxiety, and anger (Krodha / Chinta)",
+      "Strenuous exertion immediately after lunch"
+    ]
+  }
 };

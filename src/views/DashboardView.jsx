@@ -156,7 +156,7 @@ export const DashboardView = ({
       </div>
 
       {/* CLINICAL PORTAL DIRECT NAVIGATION HUB */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
         <button
           onClick={() => onNavigate('case-taking')}
           className="p-4 rounded-2xl bg-white border border-slate-200/90 hover:border-emerald-500 hover:shadow-xs transition-all text-left group cursor-pointer"
@@ -181,24 +181,18 @@ export const DashboardView = ({
 
         <button
           onClick={() => onNavigate('timeline')}
-          className="p-4 rounded-2xl bg-white border border-slate-200/90 hover:border-emerald-500 hover:shadow-xs transition-all text-left group cursor-pointer"
+          className="p-4 rounded-2xl bg-gradient-to-br from-white via-emerald-50/20 to-teal-50/30 border border-emerald-300 hover:border-emerald-600 hover:shadow-xs transition-all text-left group cursor-pointer"
         >
-          <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-800 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
-            <Clock className="w-4 h-4" />
+          <div className="flex items-center gap-2 mb-2.5">
+            <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-800 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <Clock className="w-4 h-4" />
+            </div>
+            <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center group-hover:scale-105 transition-transform shadow-2xs">
+              <Sparkles className="w-4 h-4" />
+            </div>
           </div>
-          <p className="text-xs font-bold text-slate-900 group-hover:text-amber-800">History Timeline</p>
-          <p className="text-[10px] text-slate-500 mt-0.5">Longitudinal records & biomarker trajectory</p>
-        </button>
-
-        <button
-          onClick={() => onNavigate('ai-summary')}
-          className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50/60 border border-emerald-300 hover:border-emerald-600 hover:shadow-xs transition-all text-left group cursor-pointer"
-        >
-          <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform shadow-2xs">
-            <Sparkles className="w-4 h-4" />
-          </div>
-          <p className="text-xs font-bold text-emerald-950 group-hover:text-emerald-800">AI Clinical Summary</p>
-          <p className="text-[10px] text-emerald-800 mt-0.5">Condition summaries, Vaidya decisions & conflict flags</p>
+          <p className="text-xs font-bold text-slate-900 group-hover:text-emerald-800">Timeline & Clinical Summary</p>
+          <p className="text-[10px] text-slate-500 mt-0.5">Longitudinal records, condition summaries & biomarker trajectory</p>
         </button>
       </div>
 
