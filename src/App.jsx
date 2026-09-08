@@ -230,18 +230,49 @@ export default function App() {
 
   const handleAddRecord = (newRec) => {
     setOldRecords(prev => [newRec, ...prev]);
+    
+    // Determine title prefix & key values based on category
+    let titlePrefix = "Lab Test";
+    let badgeColor = "emerald";
+    let keyValues = ["Record Stamped to ABHA ID"];
+    
+    if (newRec.type === 'Prescription') {
+      titlePrefix = "Prescription";
+      badgeColor = "teal";
+      if (newRec.extractedData?.medications && newRec.extractedData.medications.length > 0) {
+        keyValues = newRec.extractedData.medications.slice(0, 3).map(m => `${m.name} (${m.dose})`);
+      }
+    } else if (newRec.type === 'Consultation' || newRec.type === 'Ayurvedic Consultation') {
+      titlePrefix = "Consultation";
+      badgeColor = "amber";
+      if (newRec.extractedData?.herbalAdvised && newRec.extractedData.herbalAdvised.length > 0) {
+        keyValues = newRec.extractedData.herbalAdvised.slice(0, 3).map(h => h.name);
+      }
+    } else {
+      if (newRec.extractedData?.biomarkers && newRec.extractedData.biomarkers.length > 0) {
+        keyValues = newRec.extractedData.biomarkers.slice(0, 3).map(b => `${b.name}: ${b.value}`);
+      }
+    }
+
     const timelineEntry = {
       id: `TIME-${Date.now().toString().slice(-4)}`,
+      recordId: newRec.id,
       date: newRec.date,
-      title: `Lab Test: ${newRec.title}`,
+      title: `${titlePrefix}: ${newRec.title}`,
       category: newRec.type,
-      badgeColor: "emerald",
+      badgeColor: badgeColor,
       summary: newRec.extractedData?.clinicalImpression || "Document analyzed and categorized via AI OCR.",
-      keyValues: newRec.extractedData?.biomarkers?.slice(0, 3).map(b => `${b.name}: ${b.value}`) || ["Biomarkers Extracted"],
+      keyValues: keyValues,
       sourceFile: newRec.fileName
     };
     setTimeline(prev => [timelineEntry, ...prev]);
-    showToast('New diagnostic report added & indexed into timeline!', 'success');
+    showToast(`${newRec.title} added & indexed into timeline under ABHA ID!`, 'success');
+  };
+
+  const handleDeleteRecord = (recordId) => {
+    setOldRecords(prev => prev.filter(r => r.id !== recordId));
+    setTimeline(prev => prev.filter(t => t.recordId !== recordId));
+    showToast('Record removed from patient profile.', 'info');
   };
 
   const handleSyncAbdmRecords = () => {
@@ -333,6 +364,7 @@ export default function App() {
                 patient={patient}
                 oldRecords={oldRecords}
                 onAddRecord={handleAddRecord}
+                onDeleteRecord={handleDeleteRecord}
                 onNavigateToTimeline={() => setCurrentView('timeline')}
               />
             )}
