@@ -192,6 +192,16 @@ export const INITIAL_CASE_INTAKE = {
     manasikaBhavas: "High corporate occupational stress (Chinta), occasional irritability (Krodha)"
   },
 
+  // Dedicated Food Intake Log (Daily Ahara Entry)
+  foodIntake: {
+    breakfast: "Tea with whole milk, 2 sweet biscuits, poha with fried groundnuts",
+    lunch: "Polished white rice, thick arhar dal, curd (dahi), fried potato sabzi",
+    eveningSnacks: "Deep-fried samosa or pakoras with sweet chutney, masala chai",
+    dinner: "3 wheat rotis, paneer butter masala, late-night sweetened warm milk (10:30 PM)",
+    fluids: "Refrigerated chilled water after meals, 2 cups sugary milk tea",
+    notes: "Habitual curd and heavy dairy late in the evening with chilled water immediately after hot food."
+  },
+
   // Ashtavidha Pariksha (8-fold examination)
   ashtavidha: {
     nadi: "Manda, Snigdha, Vata-Kapha Gati (Manduka-Sarpa Gati mixture)",
@@ -213,6 +223,18 @@ export const INITIAL_AI_SUMMARY = {
   doctorNotes: "",
   
   synthesisOverview: "Integrated synthesis of allopathic laboratory biomarkers (HbA1c 7.8%, FBS 142 mg/dL) with classical Ayurvedic Dashavidha Pariksha and Ahara-Vihara parameters demonstrates classic Kaphaja Prameha (Ayurvedic Diabetes spectrum) rooted in Dhatvagni Mandya, Medovaha Srotodushti, and Bahu-Drava-Kapha vitiation.",
+
+  foodIntakeAnalysis: {
+    loggedMealsSummary: "High-glycemic vegetarian meals with heavy dairy (curd/milk), deep-fried snacks, and post-meal chilled water",
+    primaryTriggers: [
+      "Dadhi (Curd) & Late-Night Sweet Milk: Heavily vitiates Kapha and blocks micro-channels (Abhishyandi)",
+      "Snigdha & Guru Foods (Fried Samosa/Pakoras): Overburdens sluggish digestive fire (Mandagni), producing metabolic endotoxins (Ama)",
+      "Sheeta Jala (Chilled Water): Instantly extinguishes Jatharagni, halting gastric breakdown",
+      "Viruddha Sanyoga: Frequent combination of milk with salty/spicy snacks"
+    ],
+    doshaImpact: "Directly fuels Kaphaja Prameha and causes Srotorodha (cellular receptor obstruction / insulin resistance) in Medovaha Srotas.",
+    dietaryActionPlan: "Immediate cessation of curd at dinner, fried foods, and chilled fluids. Transition to Ushnodaka (warm spiced water) and Yava (barley-based diet)."
+  },
 
   rogaNidana: {
     vyadhi: "Kaphaja Prameha (Sannipatika Anubandhi with Pitta-Kapha)",

@@ -15,12 +15,14 @@ import {
   Droplets, 
   Wind,
   Check,
-  AlertCircle
+  AlertCircle,
+  Utensils
 } from 'lucide-react';
 
 export const AiSummaryView = ({ 
   aiSummary, 
   patient, 
+  foodIntake,
   onNavigateToReview,
   onNavigateToCase
 }) => {
@@ -164,7 +166,92 @@ export const AiSummaryView = ({
         </div>
       </div>
 
-      {/* SECTION 2: CLASSICAL AYURVEDIC FORMULATIONS TABLE */}
+      {/* SECTION 2: AI FOOD INTAKE & DIETARY ANALYSIS (AHARA PARIKSHA) */}
+      {aiSummary.foodIntakeAnalysis && (
+        <div className="bg-white rounded-3xl border border-emerald-200/90 p-6 shadow-xs space-y-4 relative overflow-hidden">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="p-1.5 rounded-lg bg-amber-100 text-amber-800">
+                  <Utensils className="w-4 h-4" />
+                </span>
+                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+                  AI Food Intake & Ahara Analysis (Dietary Etiology)
+                </h2>
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Real-time AI dietary synthesis: correlates patient's logged meals with Dosha aggravation & Dhatvagni
+              </p>
+            </div>
+
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 self-start sm:self-auto">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+              Dynamic Ingestion
+            </span>
+          </div>
+
+          {/* Meals Summary Banner */}
+          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+              Patient Logged Meals Analyzed by AI
+            </p>
+            <p className="text-xs font-semibold text-slate-800 leading-relaxed">
+              {aiSummary.foodIntakeAnalysis.loggedMealsSummary}
+            </p>
+          </div>
+
+          {/* 3-Column Analysis Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            
+            {/* Column 1: Primary Dietary Triggers */}
+            <div className="p-4 rounded-2xl bg-rose-50/50 border border-rose-200 space-y-2.5">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-rose-800 uppercase tracking-wider">
+                <AlertCircle className="w-4 h-4 text-rose-600" />
+                Detected Ahara Triggers (Nidana)
+              </div>
+              <ul className="space-y-1.5">
+                {aiSummary.foodIntakeAnalysis.primaryTriggers.map((trigger, idx) => (
+                  <li key={idx} className="text-xs text-rose-950 flex items-start gap-1.5 leading-snug">
+                    <span className="text-rose-500 font-bold">•</span>
+                    <span>{trigger}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Column 2: Dosha & Tissue Impact */}
+            <div className="p-4 rounded-2xl bg-amber-50/50 border border-amber-200 space-y-2.5">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-amber-800 uppercase tracking-wider">
+                <Flame className="w-4 h-4 text-amber-600" />
+                Agni & Dosha Impact
+              </div>
+              <p className="text-xs text-amber-950 leading-relaxed">
+                {aiSummary.foodIntakeAnalysis.doshaImpact}
+              </p>
+              <div className="pt-2 border-t border-amber-200/60 text-[11px] text-amber-800">
+                <strong>Classical Principle:</strong> Guru (heavy) & Abhishyandi foods provoke Kapha, while Sheeta (cold) items extinguish Mandagni.
+              </div>
+            </div>
+
+            {/* Column 3: Immediate Dietary Action Plan */}
+            <div className="p-4 rounded-2xl bg-emerald-50/50 border border-emerald-200 space-y-2.5">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-800 uppercase tracking-wider">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                Corrective Diet Modification
+              </div>
+              <p className="text-xs text-emerald-950 leading-relaxed">
+                {aiSummary.foodIntakeAnalysis.dietaryActionPlan}
+              </p>
+              <div className="pt-2 border-t border-emerald-200/60 text-[11px] text-emerald-800">
+                <strong>Pathya Rule:</strong> Sip lukewarm water (Ushnodaka) during meals; abstain from heavy dairy at sunset.
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* SECTION 3: CLASSICAL AYURVEDIC FORMULATIONS TABLE */}
       <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div>

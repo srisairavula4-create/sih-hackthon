@@ -20,9 +20,19 @@ import {
   Info
 } from 'lucide-react';
 
-export const CaseTakingWizard = ({ initialCase, onSaveCase, onGenerateAiSummary }) => {
+export const CaseTakingWizard = ({ initialCase, onSaveCase, onGenerateAiSummary, onUpdateFoodIntake }) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState(initialCase);
+  const [formData, setFormData] = useState({
+    ...initialCase,
+    foodIntake: initialCase?.foodIntake || {
+      breakfast: '',
+      lunch: '',
+      eveningSnacks: '',
+      dinner: '',
+      fluids: '',
+      notes: ''
+    }
+  });
   const [isRecording, setIsRecording] = useState(false);
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [aiProcessingStage, setAiProcessingStage] = useState('');
@@ -71,6 +81,9 @@ export const CaseTakingWizard = ({ initialCase, onSaveCase, onGenerateAiSummary 
     setTimeout(() => {
       setIsAiProcessing(false);
       onSaveCase(formData);
+      if (onUpdateFoodIntake && formData.foodIntake) {
+        onUpdateFoodIntake(formData.foodIntake);
+      }
       onGenerateAiSummary();
     }, 4500);
   };
@@ -626,6 +639,126 @@ export const CaseTakingWizard = ({ initialCase, onSaveCase, onGenerateAiSummary 
                   })}
                   className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white"
                 />
+              </div>
+            </div>
+
+            {/* Detailed Daily Food Intake Box (Fed directly into AI Summarization) */}
+            <div className="pt-4 mt-4 border-t border-slate-200">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="p-1.5 rounded-lg bg-amber-100 text-amber-800">
+                    <Utensils className="w-4 h-4" />
+                  </span>
+                  <div>
+                    <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                      Detailed Daily Food Intake (Feeds directly into AI Clinical Summary)
+                    </h3>
+                    <p className="text-[11px] text-slate-500">
+                      Record meal specifics to enable AI dietary etiology (Ahara Nidana) & Pathya-Apathya formulation
+                    </p>
+                  </div>
+                </div>
+                <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300">
+                  AI Summarizer Input
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    🥣 Breakfast (Morning Ahara)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.foodIntake?.breakfast || ''}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      foodIntake: { ...formData.foodIntake, breakfast: e.target.value }
+                    })}
+                    placeholder="e.g. 2 Idlis, coconut chutney, sweet tea"
+                    className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    🍛 Lunch (Madhyahna Ahara)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.foodIntake?.lunch || ''}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      foodIntake: { ...formData.foodIntake, lunch: e.target.value }
+                    })}
+                    placeholder="e.g. Polished white rice, curd, dal, potato fry"
+                    className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    ☕ Evening Snacks
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.foodIntake?.eveningSnacks || ''}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      foodIntake: { ...formData.foodIntake, eveningSnacks: e.target.value }
+                    })}
+                    placeholder="e.g. Samosas, pakoras, sweet biscuits"
+                    className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    🍽️ Dinner (Ratri Ahara)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.foodIntake?.dinner || ''}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      foodIntake: { ...formData.foodIntake, dinner: e.target.value }
+                    })}
+                    placeholder="e.g. 3 Rotis, paneer sabzi, sweet warm milk"
+                    className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    💧 Daily Fluids & Hydration
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.foodIntake?.fluids || ''}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      foodIntake: { ...formData.foodIntake, fluids: e.target.value }
+                    })}
+                    placeholder="e.g. Chilled refrigerator water, sugary tea"
+                    className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    📝 Dietary Peculiarities / Habits
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.foodIntake?.notes || ''}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      foodIntake: { ...formData.foodIntake, notes: e.target.value }
+                    })}
+                    placeholder="e.g. Habitual curd at night, chilled water after meals"
+                    className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                </div>
               </div>
             </div>
           </div>

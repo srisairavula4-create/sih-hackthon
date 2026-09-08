@@ -5,12 +5,12 @@ export const AuthView = ({ onLoginSuccess }) => {
   const [authMode, setAuthMode] = useState('login'); // 'login' | 'register'
   const [selectedRole, setSelectedRole] = useState('patient'); // 'patient' | 'vaidya'
   
-  // Login Form State
-  const [loginIdentifier, setLoginIdentifier] = useState('aarav.sharma@example.com');
-  const [loginPassword, setLoginPassword] = useState('password123');
+  // Login Form State - Blank by default so user creates and logs in their own profile
+  const [loginIdentifier, setLoginIdentifier] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
   const [loginError, setLoginError] = useState('');
 
-  // Registration Form State
+  // Registration Form State - User creates their own custom patient
   const [regForm, setRegForm] = useState({
     fullName: '',
     age: '',
@@ -23,21 +23,6 @@ export const AuthView = ({ onLoginSuccess }) => {
     confirmPassword: ''
   });
   const [regErrors, setRegErrors] = useState({});
-
-  const handleQuickPatientLogin = () => {
-    onLoginSuccess('patient', {
-      id: "P-98421",
-      name: "Aarav Sharma",
-      age: 38,
-      gender: "Male",
-      phone: "+91 98765 43210",
-      email: "aarav.sharma@example.com",
-      abhaId: "91-2345-6789-1234",
-      abhaAddress: "aarav.sharma@abdm",
-      isAbhaLinked: false,
-      bloodGroup: "B+"
-    });
-  };
 
   const handleQuickVaidyaLogin = () => {
     onLoginSuccess('vaidya', {
@@ -65,7 +50,24 @@ export const AuthView = ({ onLoginSuccess }) => {
     if (selectedRole === 'vaidya') {
       handleQuickVaidyaLogin();
     } else {
-      handleQuickPatientLogin();
+      // Dynamic Login with user's entered credential
+      const username = loginIdentifier.includes('@') 
+        ? loginIdentifier.split('@')[0].replace(/[^a-zA-Z]/g, ' ').trim() 
+        : `Patient ${loginIdentifier.slice(-4)}`;
+      const formattedName = username ? username.charAt(0).toUpperCase() + username.slice(1) : "Registered Patient";
+
+      onLoginSuccess('patient', {
+        id: "P-" + Math.floor(10000 + Math.random() * 90000),
+        name: formattedName,
+        age: 36,
+        gender: "Male",
+        phone: loginIdentifier.includes('@') ? "+91 98765 43210" : loginIdentifier,
+        email: loginIdentifier.includes('@') ? loginIdentifier : `${loginIdentifier}@patient.com`,
+        abhaId: "91-2345-6789-1234",
+        abhaAddress: `${formattedName.toLowerCase().replace(/\s+/g, '')}@abdm`,
+        isAbhaLinked: true,
+        bloodGroup: "B+"
+      });
     }
   };
 
@@ -139,46 +141,26 @@ export const AuthView = ({ onLoginSuccess }) => {
       <div className="sm:mx-auto sm:w-full sm:max-w-lg">
         
         {/* Quick Demo Test-Drive Banner */}
-        <div className="bg-white/90 border border-emerald-200 rounded-2xl p-4 shadow-sm mb-5 backdrop-blur-xs">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-              1-Click Hackathon Demo Mode
-            </span>
-            <span className="text-[10px] font-medium text-slate-500">Instant Access</span>
+        {/* Authentication Notice Banner */}
+        <div className="bg-white/90 border border-slate-200/90 rounded-2xl p-4 shadow-sm mb-5 backdrop-blur-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center font-bold flex-shrink-0">
+              <User className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-slate-800">Create & Log in Your Own Patient Account</p>
+              <p className="text-[11px] text-slate-500">Register with your name to start personalized Ayurvedic case-taking & link ABHA.</p>
+            </div>
           </div>
-          <p className="text-xs text-slate-600 mb-3">
-            Select a pre-populated persona to test the complete clinical workflow without manual entry:
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            <button
-              onClick={handleQuickPatientLogin}
-              className="flex items-center gap-2.5 p-2.5 rounded-xl border border-emerald-200 bg-emerald-50/70 hover:bg-emerald-100 text-left transition-all group"
-            >
-              <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
-                <User className="w-4 h-4" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-slate-800 truncate">Patient: Aarav Sharma</p>
-                <p className="text-[10px] text-emerald-700">T2DM, Pitta-Kapha Intake</p>
-              </div>
-              <ArrowRight className="w-3.5 h-3.5 text-emerald-600 ml-auto opacity-70 group-hover:translate-x-0.5 transition-transform" />
-            </button>
-
-            <button
-              onClick={handleQuickVaidyaLogin}
-              className="flex items-center gap-2.5 p-2.5 rounded-xl border border-teal-200 bg-teal-50/70 hover:bg-teal-100 text-left transition-all group"
-            >
-              <div className="w-8 h-8 rounded-lg bg-teal-600 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
-                <Stethoscope className="w-4 h-4" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-slate-800 truncate">Vaidya: Dr. P. Joshi</p>
-                <p className="text-[10px] text-teal-700">MD (Ayu), Review Portal</p>
-              </div>
-              <ArrowRight className="w-3.5 h-3.5 text-teal-600 ml-auto opacity-70 group-hover:translate-x-0.5 transition-transform" />
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleQuickVaidyaLogin}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 text-xs font-semibold transition-all self-end sm:self-auto flex-shrink-0"
+            title="Access Doctor / Vaidya workstation directly"
+          >
+            <Stethoscope className="w-3.5 h-3.5 text-teal-600" />
+            <span>Doctor Sign In</span>
+          </button>
         </div>
 
         {/* Main Card with Tabs */}

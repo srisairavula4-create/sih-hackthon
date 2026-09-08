@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   FileText, 
   UploadCloud, 
@@ -14,7 +14,8 @@ import {
   FileCheck,
   Flame,
   ShieldCheck,
-  Calendar
+  Calendar,
+  Utensils
 } from 'lucide-react';
 import { DoshaMeter } from '../components/DoshaMeter';
 import { MissingDocBanner } from '../components/NotificationToast';
@@ -27,8 +28,37 @@ export const DashboardView = ({
   onNavigate, 
   onOpenAbha,
   aiSummary,
-  oldRecords
+  oldRecords,
+  foodIntake,
+  onUpdateFoodIntake
 }) => {
+  const [isEditingFood, setIsEditingFood] = useState(false);
+  const [foodForm, setFoodForm] = useState(foodIntake || {
+    breakfast: '',
+    lunch: '',
+    eveningSnacks: '',
+    dinner: '',
+    fluids: ''
+  });
+
+  React.useEffect(() => {
+    if (foodIntake) {
+      setFoodForm(foodIntake);
+    }
+  }, [foodIntake]);
+
+  const handleSaveFood = (e) => {
+    if (e) e.preventDefault();
+    if (onUpdateFoodIntake) {
+      onUpdateFoodIntake(foodForm);
+    }
+    setIsEditingFood(false);
+  };
+
+  const patientInitials = patient.name 
+    ? patient.name.trim().split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() 
+    : 'PT';
+
   return (
     <div className="space-y-6 pb-12 animate-fadeIn">
       
@@ -47,7 +77,7 @@ export const DashboardView = ({
           <div className="flex items-start sm:items-center gap-4">
             <div className="relative">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-emerald-600/20">
-                AS
+                {patientInitials}
               </div>
               <div className="absolute -bottom-1 -right-1 bg-white p-1 rounded-full border border-slate-200 shadow-2xs">
                 <HeartPulse className="w-4 h-4 text-emerald-600" />
@@ -224,6 +254,258 @@ export const DashboardView = ({
           </div>
 
         </div>
+      </div>
+
+      {/* DEDICATED FOOD INTAKE & AHARA LOG BOX (FEEDS AI SUMMARIZATION) */}
+      <div className="bg-white rounded-3xl border border-emerald-200/90 p-5 sm:p-6 shadow-xs relative overflow-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+          <div className="flex items-start sm:items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center flex-shrink-0">
+              <Utensils className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold text-slate-900">
+                  Daily Food Intake & Ahara Log
+                </h2>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                  <Sparkles className="w-3 h-3 text-emerald-600" />
+                  AI Analyzed
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Record your daily meals to let AI detect dietary triggers (Nidana), Dosha imbalance & formulate Pathya-Apathya
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 self-end sm:self-auto">
+            {!isEditingFood ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setIsEditingFood(true)}
+                  className="px-3.5 py-2 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition-colors"
+                >
+                  Edit Food Intake
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleSaveFood();
+                    onNavigate('ai-summary');
+                  }}
+                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-colors shadow-xs"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  View AI Analysis
+                </button>
+              </>
+            ) : (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsEditingFood(false)}
+                  className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveFood}
+                  className="px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-colors shadow-xs flex items-center gap-1.5"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Save & Update AI
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Display Mode: Micro-Cards */}
+        {!isEditingFood ? (
+          <div className="pt-4 space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+              
+              {/* Breakfast */}
+              <div className="p-3 rounded-2xl bg-slate-50/80 border border-slate-200/80 hover:bg-emerald-50/30 transition-colors">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 block mb-1">
+                  🥣 Breakfast (Morning)
+                </span>
+                <p className="text-xs font-medium text-slate-800 leading-snug line-clamp-2">
+                  {foodForm.breakfast || "Not recorded"}
+                </p>
+              </div>
+
+              {/* Lunch */}
+              <div className="p-3 rounded-2xl bg-slate-50/80 border border-slate-200/80 hover:bg-emerald-50/30 transition-colors">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 block mb-1">
+                  🍛 Lunch (Madhyahna)
+                </span>
+                <p className="text-xs font-medium text-slate-800 leading-snug line-clamp-2">
+                  {foodForm.lunch || "Not recorded"}
+                </p>
+              </div>
+
+              {/* Evening Snacks */}
+              <div className="p-3 rounded-2xl bg-slate-50/80 border border-slate-200/80 hover:bg-emerald-50/30 transition-colors">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 block mb-1">
+                  ☕ Evening Snacks
+                </span>
+                <p className="text-xs font-medium text-slate-800 leading-snug line-clamp-2">
+                  {foodForm.eveningSnacks || "Not recorded"}
+                </p>
+              </div>
+
+              {/* Dinner */}
+              <div className="p-3 rounded-2xl bg-slate-50/80 border border-slate-200/80 hover:bg-emerald-50/30 transition-colors">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 block mb-1">
+                  🍽️ Dinner (Ratri Ahara)
+                </span>
+                <p className="text-xs font-medium text-slate-800 leading-snug line-clamp-2">
+                  {foodForm.dinner || "Not recorded"}
+                </p>
+              </div>
+
+              {/* Fluids */}
+              <div className="p-3 rounded-2xl bg-slate-50/80 border border-slate-200/80 hover:bg-emerald-50/30 transition-colors">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-teal-700 block mb-1">
+                  💧 Fluids & Water
+                </span>
+                <p className="text-xs font-medium text-slate-800 leading-snug line-clamp-2">
+                  {foodForm.fluids || "Not recorded"}
+                </p>
+              </div>
+
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 text-[11px] text-slate-500 bg-emerald-50/40 p-2.5 rounded-xl border border-emerald-100">
+              <span className="flex items-center gap-1.5 text-emerald-800 font-medium">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                AI Analysis: {aiSummary.foodIntakeAnalysis ? aiSummary.foodIntakeAnalysis.primaryTriggers.slice(0, 2).join(' • ') : 'Ready for analysis'}
+              </span>
+              <button 
+                onClick={() => onNavigate('ai-summary')}
+                className="text-xs font-bold text-emerald-700 hover:underline flex items-center gap-1 self-end sm:self-auto"
+              >
+                Inspect Full Dietary Report →
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* Editing Form */
+          <form onSubmit={handleSaveFood} className="pt-4 space-y-4">
+            <div className="flex flex-wrap items-center gap-2 pb-2">
+              <span className="text-xs font-bold text-slate-600">Quick Presets:</span>
+              <button
+                type="button"
+                onClick={() => setFoodForm({
+                  breakfast: "Idli with coconut chutney, sweet milk tea with 2 tsp sugar",
+                  lunch: "White polished rice, thick curd (dahi), aloo fry, dal with ghee",
+                  eveningSnacks: "Deep fried samosa, 3 biscuits, sweet milk tea",
+                  dinner: "3 Wheat rotis, paneer butter masala, late-night sweetened cold milk",
+                  fluids: "Refrigerated chilled water after meals, 3 sugary teas",
+                  notes: "Frequent heavy curd and chilled water with meals."
+                })}
+                className="px-2.5 py-1 text-[11px] font-medium bg-amber-50 text-amber-800 border border-amber-200 rounded-lg hover:bg-amber-100"
+              >
+                High-Kapha / Curd Diet (Triggers)
+              </button>
+              <button
+                type="button"
+                onClick={() => setFoodForm({
+                  breakfast: "Yava (Barley) porridge with roasted cumin and warm water",
+                  lunch: "Mudga (Moong dal) soup, roasted vegetables (bitter gourd), spiced takra",
+                  eveningSnacks: "Roasted makhana with pinch of rock salt and ginger tea",
+                  dinner: "1 Light barley roti with steamed ridge gourd, eaten before 7:30 PM",
+                  fluids: "Boiled warm water (Ushnodaka) with dry ginger, no cold fluids",
+                  notes: "Strict Sattvic Pathya regimen pacifying Kapha and igniting Agni."
+                })}
+                className="px-2.5 py-1 text-[11px] font-medium bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-lg hover:bg-emerald-100"
+              >
+                Sattvic Pathya Diet (Healing)
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  🥣 Breakfast (Morning)
+                </label>
+                <input
+                  type="text"
+                  value={foodForm.breakfast}
+                  onChange={(e) => setFoodForm({ ...foodForm, breakfast: e.target.value })}
+                  placeholder="e.g. Idli, sambar, coffee with sugar"
+                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  🍛 Lunch (Madhyahna)
+                </label>
+                <input
+                  type="text"
+                  value={foodForm.lunch}
+                  onChange={(e) => setFoodForm({ ...foodForm, lunch: e.target.value })}
+                  placeholder="e.g. Rice, curd, dal, sabzi, ghee"
+                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  ☕ Evening Snacks
+                </label>
+                <input
+                  type="text"
+                  value={foodForm.eveningSnacks}
+                  onChange={(e) => setFoodForm({ ...foodForm, eveningSnacks: e.target.value })}
+                  placeholder="e.g. Samosa, biscuits, milk tea"
+                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  🍽️ Dinner (Ratri Ahara)
+                </label>
+                <input
+                  type="text"
+                  value={foodForm.dinner}
+                  onChange={(e) => setFoodForm({ ...foodForm, dinner: e.target.value })}
+                  placeholder="e.g. 2 Rotis, sabzi, bedtime milk"
+                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  💧 Fluids & Drinks
+                </label>
+                <input
+                  type="text"
+                  value={foodForm.fluids}
+                  onChange={(e) => setFoodForm({ ...foodForm, fluids: e.target.value })}
+                  placeholder="e.g. Chilled refrigerator water, soda, tea"
+                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+                />
+              </div>
+
+              <div className="flex items-end">
+                <button
+                  type="submit"
+                  className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-xs flex items-center justify-center gap-1.5"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  Save & Ingest into AI Engine
+                </button>
+              </div>
+            </div>
+          </form>
+        )}
       </div>
 
       {/* LOWER SPLIT SECTION: Dosha Meter & AI Clinical Summary Spotlight */}

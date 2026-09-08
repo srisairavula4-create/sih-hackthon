@@ -20,12 +20,36 @@ import {
 } from './types/data';
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  // Start unauthenticated so user creates and logs in their own profile
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState('patient'); // 'patient' | 'vaidya'
   const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' | 'case-taking' | 'upload-records' | 'timeline' | 'ai-summary' | 'vaidya-review'
   
-  // Data States
-  const [patient, setPatient] = useState(INITIAL_PATIENT);
+  // Data States - starts dynamically populated from user's registration
+  const [patient, setPatient] = useState({
+    id: "P-1001",
+    name: "Registered Patient",
+    age: 36,
+    gender: "Male",
+    phone: "+91 98765 00000",
+    email: "patient@example.com",
+    abhaId: "91-2345-6789-1234",
+    abhaAddress: "patient@abdm",
+    isAbhaLinked: false,
+    bloodGroup: "O+",
+    emergencyContact: "Primary Caregiver - +91 98765 00001",
+    prakriti: "Pitta-Kapha",
+    vikriti: "Kapha-Vataja (Ama-yukta)",
+    bmi: "25.4 (Normal / Overweight borderline)",
+    vitals: {
+      bp: "128/82 mmHg",
+      pulse: "74 bpm",
+      weight: "74 kg",
+      height: "172 cm",
+      bloodSugarFasting: "138 mg/dL",
+      lastRecorded: "Today"
+    }
+  });
   const [vaidya, setVaidya] = useState(INITIAL_VAIDYA);
   const [caseData, setCaseData] = useState(INITIAL_CASE_INTAKE);
   const [oldRecords, setOldRecords] = useState(SAMPLE_OLD_RECORDS);
@@ -44,6 +68,45 @@ export default function App() {
     }, 4000);
   };
 
+  const handleUpdateFoodIntake = (newFoodIntake) => {
+    setCaseData(prev => ({
+      ...prev,
+      foodIntake: newFoodIntake
+    }));
+
+    // Dynamic AI Summarization update based on user's entered food intake!
+    const foodString = `${newFoodIntake.breakfast} ${newFoodIntake.lunch} ${newFoodIntake.eveningSnacks} ${newFoodIntake.dinner} ${newFoodIntake.fluids} ${newFoodIntake.notes || ''}`.toLowerCase();
+    
+    const triggers = [];
+    if (foodString.includes('curd') || foodString.includes('dahi') || foodString.includes('milk') || foodString.includes('dairy') || foodString.includes('cheese') || foodString.includes('paneer')) {
+      triggers.push("Dadhi/Dairy Heavy Intake: Aggravates Kapha and creates micro-channel blockage (Abhishyandi).");
+    }
+    if (foodString.includes('samosa') || foodString.includes('fried') || foodString.includes('pakora') || foodString.includes('oil') || foodString.includes('chips') || foodString.includes('fast food') || foodString.includes('burger')) {
+      triggers.push("Deep Fried & Oily Items (Snigdha/Guru): Dampens Jatharagni, creating metabolic endotoxins (Ama).");
+    }
+    if (foodString.includes('cold') || foodString.includes('chilled') || foodString.includes('ice') || foodString.includes('soda') || foodString.includes('coke') || foodString.includes('juice')) {
+      triggers.push("Sheeta Jala & Sugary Beverages: Shuts down digestive enzyme secretion, causing delayed gastric emptying.");
+    }
+    if (foodString.includes('sweet') || foodString.includes('sugar') || foodString.includes('biscuit') || foodString.includes('cake') || foodString.includes('rice') || foodString.includes('roti') || foodString.includes('bread')) {
+      triggers.push("Madhura Rasa & High Carbs: Directly elevates circulating glucose and promotes Kaphaja Prameha.");
+    }
+    if (triggers.length === 0) {
+      triggers.push("Standard mixed dietary intake logged; indicates need for customized Agni-deepana herbs.");
+    }
+
+    setAiSummary(prev => ({
+      ...prev,
+      foodIntakeAnalysis: {
+        loggedMealsSummary: `Patient Logged: Breakfast (${newFoodIntake.breakfast || 'None'}), Lunch (${newFoodIntake.lunch || 'Standard'}), Snacks (${newFoodIntake.eveningSnacks || 'None'}), Dinner (${newFoodIntake.dinner || 'Standard'}), Fluids (${newFoodIntake.fluids || 'Standard'})`,
+        primaryTriggers: triggers,
+        doshaImpact: "Dietary habits directly impact Dhatvagni and Medovaha Srotas, fueling metabolic disease progression.",
+        dietaryActionPlan: "Adjust meal timings: light dinner before 8:00 PM, eliminate day sleep, replace heavy fried snacks with roasted barley (Yava) or green gram (Mudga) broth."
+      }
+    }));
+
+    showToast("Food intake logged & analyzed by AI Clinical Engine!", "success");
+  };
+
   const handleLoginSuccess = (role, userData) => {
     setUserRole(role);
     if (role === 'patient') {
@@ -54,7 +117,7 @@ export default function App() {
       setCurrentView('vaidya-review');
     }
     setIsAuthenticated(true);
-    showToast(`Welcome back, ${userData.name}!`, 'success');
+    showToast(`Welcome, ${userData.name}!`, 'success');
   };
 
   const handleLogout = () => {
@@ -136,6 +199,8 @@ export default function App() {
                 onOpenAbha={() => setIsAbhaModalOpen(true)}
                 aiSummary={aiSummary}
                 oldRecords={oldRecords}
+                foodIntake={caseData.foodIntake}
+                onUpdateFoodIntake={handleUpdateFoodIntake}
               />
             )}
 
@@ -147,6 +212,7 @@ export default function App() {
                   setCaseData(updated);
                   showToast('Ayurvedic Case details updated successfully!', 'success');
                 }}
+                onUpdateFoodIntake={handleUpdateFoodIntake}
                 onGenerateAiSummary={() => {
                   setCurrentView('ai-summary');
                   showToast('AI Clinical Summary synthesized from case intake!', 'success');
@@ -176,6 +242,7 @@ export default function App() {
               <AiSummaryView 
                 aiSummary={aiSummary}
                 patient={patient}
+                foodIntake={caseData.foodIntake}
                 onNavigateToReview={() => {
                   setUserRole('vaidya');
                   setCurrentView('vaidya-review');
