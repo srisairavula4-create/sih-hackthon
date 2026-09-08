@@ -316,9 +316,16 @@ export const RecordUploadView = ({
 
       onAddRecord(newRecord);
       setSelectedRecord(newRecord);
-      setVerifiedSuccessNotice(`✓ Valid ${validation.category} verified! All clinical entities extracted and permanently stamped under ABHA ID: ${patient?.abhaId}`);
+      setVerifiedSuccessNotice(`✓ Valid ${validation.category} verified! All clinical entities extracted and permanently stamped under ABHA ID: ${patient?.abhaId}. Automatically updating into Medical Timeline...`);
       setStagedFile(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
+
+      // Auto-navigate to timeline after 1.2 seconds so user sees the live timeline update
+      setTimeout(() => {
+        if (onNavigateToTimeline) {
+          onNavigateToTimeline();
+        }
+      }, 1400);
     }, 400);
   };
 

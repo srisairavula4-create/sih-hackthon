@@ -229,9 +229,16 @@ export default function App() {
   };
 
   const handleAddRecord = (newRec) => {
-    setOldRecords(prev => [newRec, ...prev]);
+    // 1. Update oldRecords and sync to localStorage
+    setOldRecords(prev => {
+      const updated = [newRec, ...prev.filter(r => r.id !== newRec.id)];
+      try {
+        localStorage.setItem('ayurvaidya_records', JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
     
-    // Determine title prefix & key values based on category
+    // 2. Determine title prefix, key values & category
     let titlePrefix = "Lab Test";
     let badgeColor = "emerald";
     let keyValues = ["Record Stamped to ABHA ID"];
@@ -261,12 +268,24 @@ export default function App() {
       title: `${titlePrefix}: ${newRec.title}`,
       category: newRec.type,
       badgeColor: badgeColor,
-      summary: newRec.extractedData?.clinicalImpression || "Document analyzed and categorized via AI OCR.",
+      summary: newRec.extractedData?.clinicalImpression || "Document verified and categorized via AI OCR.",
       keyValues: keyValues,
-      sourceFile: newRec.fileName
+      sourceFile: newRec.fileName,
+      institution: newRec.institution,
+      extractedData: newRec.extractedData,
+      isNew: true
     };
-    setTimeline(prev => [timelineEntry, ...prev]);
-    showToast(`${newRec.title} added & indexed into timeline under ABHA ID!`, 'success');
+
+    // 3. Update timeline and sync to localStorage
+    setTimeline(prev => {
+      const updated = [timelineEntry, ...prev.filter(t => t.recordId !== newRec.id)];
+      try {
+        localStorage.setItem('ayurvaidya_timeline', JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
+
+    showToast(`${newRec.title} verified & automatically indexed into Timeline!`, 'success');
   };
 
   const handleDeleteRecord = (recordId) => {
@@ -374,6 +393,7 @@ export default function App() {
               <TimelineView 
                 patient={patient}
                 timeline={timeline}
+                oldRecords={oldRecords}
                 onNavigateToUpload={() => setCurrentView('upload-records')}
               />
             )}

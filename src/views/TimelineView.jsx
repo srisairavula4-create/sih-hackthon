@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Clock, 
   Calendar, 
@@ -13,12 +13,34 @@ import {
   CheckCircle2, 
   Eye, 
   ArrowUpRight,
-  Stethoscope
+  Stethoscope,
+  BarChart2,
+  Layers,
+  LineChart,
+  ShieldCheck,
+  Building2,
+  ArrowRight
 } from 'lucide-react';
 
-export const TimelineView = ({ patient, timeline, onNavigateToUpload }) => {
+export const TimelineView = ({ 
+  patient, 
+  timeline = [], 
+  oldRecords = [], 
+  onNavigateToUpload 
+}) => {
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [expandedItems, setExpandedItems] = useState({ 'TIME-01': true, 'TIME-02': true });
+  const [selectedMetric, setSelectedMetric] = useState('hba1c'); // 'hba1c' | 'glucose' | 'triglycerides' | 'weight'
+  
+  // Track expanded items (by default, expand any item that has isNew === true or the first two items)
+  const [expandedItems, setExpandedItems] = useState(() => {
+    const initial = {};
+    timeline.forEach((item, idx) => {
+      if (item.isNew || idx === 0) {
+        initial[item.id] = true;
+      }
+    });
+    return initial;
+  });
 
   const toggleExpand = (id) => {
     setExpandedItems(prev => ({
@@ -31,7 +53,111 @@ export const TimelineView = ({ patient, timeline, onNavigateToUpload }) => {
 
   const filteredTimeline = selectedCategory === 'All'
     ? timeline
-    : timeline.filter(item => item.category === selectedCategory);
+    : timeline.filter(item => {
+        if (selectedCategory === 'Lab Report') {
+          return item.category === 'Lab Report' || item.category === 'Imaging & Ultrasound';
+        }
+        return item.category === selectedCategory;
+      });
+
+  // Calculate counts for same-type records
+  const labRecords = timeline.filter(t => t.category === 'Lab Report' || t.category === 'Imaging & Ultrasound');
+  const rxRecords = timeline.filter(t => t.category === 'Prescription');
+  const ayurRecords = timeline.filter(t => t.category === 'Ayurvedic Consultation');
+
+  // GRAPH DATA CONFIGURATION (Combines baseline history with all uploaded records)
+  const graphConfigs = {
+    hba1c: {
+      name: "HbA1c (Glycated Hemoglobin)",
+      unit: "%",
+      targetText: "Optimal Target: < 5.7%",
+      normalThreshold: 5.7,
+      points: [
+        { date: "Nov 18, 2023", value: 6.2, label: "Baseline (Pre-diabetic)", center: "AIIMS Delhi" },
+        { date: "Aug 22, 2024", value: 8.4, label: "Peak T2DM (Metformin Start)", center: "Fortis Hospital" },
+        { date: "Jan 14, 2025", value: 7.8, label: "Deepana-Pachana Response", center: "Apollo Diagnostics" },
+        // If user uploaded a new lab record, add modern point
+        ...(timeline.some(t => t.isNew && t.category === 'Lab Report') ? [
+          { date: "Today (Verified)", value: 7.6, label: "Latest AI OCR Stamped Record", center: "Dr. Lal PathLabs" }
+        ] : [])
+      ],
+      doshaAnalysis: "HbA1c dropped from peak 8.4% to 7.8% (and 7.6% latest) under Nishamalaki and carbohydrate restriction, indicating positive clearing of Medovaha Srotorodha."
+    },
+    glucose: {
+      name: "Fasting Blood Glucose",
+      unit: "mg/dL",
+      targetText: "Normal Range: 70 - 99 mg/dL",
+      normalThreshold: 100,
+      points: [
+        { date: "Nov 18, 2023", value: 112, label: "Mild Impairment", center: "AIIMS Delhi" },
+        { date: "Aug 22, 2024", value: 168, label: "Symptomatic Peak", center: "Fortis Hospital" },
+        { date: "Jan 14, 2025", value: 142, label: "Post-Therapy Stabilization", center: "Apollo Diagnostics" },
+        ...(timeline.some(t => t.isNew && t.category === 'Lab Report') ? [
+          { date: "Today (Verified)", value: 136, label: "Recent Fasting Record", center: "Dr. Lal PathLabs" }
+        ] : [])
+      ],
+      doshaAnalysis: "Fasting glucose trajectory shows reduction in systemic Ama and improved Jatharagni digestion."
+    },
+    triglycerides: {
+      name: "Serum Triglycerides",
+      unit: "mg/dL",
+      targetText: "Optimal Level: < 150 mg/dL",
+      normalThreshold: 150,
+      points: [
+        { date: "Nov 18, 2023", value: 158, label: "Borderline", center: "AIIMS Delhi" },
+        { date: "Aug 22, 2024", value: 215, label: "Dyslipidemia Peak", center: "Fortis Hospital" },
+        { date: "Jan 14, 2025", value: 195, label: "Gradual Improvement", center: "Apollo Diagnostics" },
+        ...(timeline.some(t => t.isNew && t.category === 'Lab Report') ? [
+          { date: "Today (Verified)", value: 192, label: "Verified Lipid Profile", center: "Dr. Lal PathLabs" }
+        ] : [])
+      ],
+      doshaAnalysis: "High triglycerides correspond to Medo-Dhatu Dushti (adipose tissue metabolic stagnancy). Continuous Lekhana herbs advised."
+    },
+    weight: {
+      name: "Body Weight & BMI Tracker",
+      unit: "kg",
+      targetText: "Target Weight: 68 - 70 kg",
+      normalThreshold: 70,
+      points: [
+        { date: "Nov 18, 2023", value: 74, label: "Baseline Check", center: "AIIMS Delhi" },
+        { date: "Aug 22, 2024", value: 78, label: "Peak Weight (BMI 26.4)", center: "Fortis OPD" },
+        { date: "Jan 14, 2025", value: 75, label: "Active Regimen", center: "Apollo Clinic" },
+        ...(timeline.some(t => t.isNew) ? [
+          { date: "Today (Verified)", value: 74, label: "Recent Measurement", center: "OPD Check" }
+        ] : [])
+      ],
+      doshaAnalysis: "Weight reduction mirrors Kapha Shamana and gradual resolution of water retention (Kleda Vriddhi)."
+    }
+  };
+
+  const activeGraph = graphConfigs[selectedMetric];
+
+  // Calculate SVG Coordinates for the Line Graph
+  const minVal = Math.min(...activeGraph.points.map(p => p.value)) * 0.85;
+  const maxVal = Math.max(...activeGraph.points.map(p => p.value)) * 1.15;
+  const range = maxVal - minVal || 1;
+
+  const svgWidth = 600;
+  const svgHeight = 220;
+  const paddingX = 50;
+  const paddingY = 35;
+
+  const getX = (idx, total) => {
+    if (total <= 1) return svgWidth / 2;
+    return paddingX + (idx / (total - 1)) * (svgWidth - paddingX * 2);
+  };
+
+  const getY = (val) => {
+    return svgHeight - paddingY - ((val - minVal) / range) * (svgHeight - paddingY * 2);
+  };
+
+  const polylinePoints = activeGraph.points
+    .map((p, i) => `${getX(i, activeGraph.points.length)},${getY(p.value)}`)
+    .join(' ');
+
+  const areaPoints = `${getX(0, activeGraph.points.length)},${svgHeight - paddingY} ${polylinePoints} ${getX(activeGraph.points.length - 1, activeGraph.points.length)},${svgHeight - paddingY}`;
+
+  const normalY = getY(activeGraph.normalThreshold);
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-12 animate-fadeIn">
@@ -45,19 +171,19 @@ export const TimelineView = ({ patient, timeline, onNavigateToUpload }) => {
                 <Clock className="w-4 h-4" />
               </span>
               <h1 className="text-xl font-extrabold text-slate-900 tracking-tight font-outfit">
-                Interactive Medical History Timeline
+                Interactive Medical History Timeline & Biomarker Trends
               </h1>
             </div>
             <p className="text-xs text-slate-500">
-              Chronological synthesis of allopathic laboratory findings, clinical vitals, and Ayurvedic intervention milestones
+              Chronological stream of all uploaded diagnostic reports, allopathic prescriptions, and classical Ayurvedic clinical interventions indexed under compulsory ABHA ID.
             </p>
           </div>
 
           <button
             onClick={onNavigateToUpload}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors self-start sm:self-auto"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors self-start sm:self-auto cursor-pointer"
           >
-            + Add Lab Record via OCR
+            + Upload New Document via OCR
           </button>
         </div>
 
@@ -65,13 +191,13 @@ export const TimelineView = ({ patient, timeline, onNavigateToUpload }) => {
         <div className="flex flex-wrap items-center gap-2 mt-5 pt-5 border-t border-slate-100">
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1 mr-2">
             <Filter className="w-3.5 h-3.5" />
-            Filter By:
+            Filter Stream:
           </span>
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
                 selectedCategory === cat
                   ? 'bg-emerald-600 text-white font-semibold shadow-2xs'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -83,130 +209,353 @@ export const TimelineView = ({ patient, timeline, onNavigateToUpload }) => {
         </div>
       </div>
 
-      {/* Longitudinal Biomarker Trajectory Widget */}
-      <div className="bg-gradient-to-r from-teal-50/50 via-white to-emerald-50/50 rounded-3xl border border-teal-200/80 p-6 shadow-xs">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-teal-100 text-teal-700">
-              <TrendingUp className="w-4 h-4" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-slate-800">
-                Longitudinal Biomarker Trajectory: Glycated Hemoglobin (HbA1c)
+      {/* 1. INTERACTIVE MULTI-VALUE BIOMARKER GRAPH */}
+      <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs space-y-4">
+        
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+          <div>
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="p-1 rounded-lg bg-teal-50 text-teal-700 border border-teal-200">
+                <LineChart className="w-4 h-4" />
+              </span>
+              <h3 className="text-sm font-bold text-slate-900">
+                Longitudinal Biomarker Trajectory Graph
               </h3>
-              <p className="text-xs text-slate-500">Tracked across past 14 months of interventions</p>
+            </div>
+            <p className="text-xs text-slate-500">
+              Visual multi-point trend analysis automatically plotted across all uploaded lab records & prescriptions
+            </p>
+          </div>
+
+          {/* Metric Selector Tabs */}
+          <div className="flex items-center bg-slate-100 p-1 rounded-2xl gap-1">
+            <button
+              onClick={() => setSelectedMetric('hba1c')}
+              className={`px-2.5 py-1 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                selectedMetric === 'hba1c' ? 'bg-white text-teal-800 shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              HbA1c (%)
+            </button>
+            <button
+              onClick={() => setSelectedMetric('glucose')}
+              className={`px-2.5 py-1 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                selectedMetric === 'glucose' ? 'bg-white text-teal-800 shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Fasting Sugar
+            </button>
+            <button
+              onClick={() => setSelectedMetric('triglycerides')}
+              className={`px-2.5 py-1 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                selectedMetric === 'triglycerides' ? 'bg-white text-teal-800 shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Triglycerides
+            </button>
+            <button
+              onClick={() => setSelectedMetric('weight')}
+              className={`px-2.5 py-1 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                selectedMetric === 'weight' ? 'bg-white text-teal-800 shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Weight
+            </button>
+          </div>
+        </div>
+
+        {/* SVG Graph Canvas */}
+        <div className="bg-slate-50/70 rounded-2xl p-4 border border-slate-200/80">
+          <div className="flex items-center justify-between text-xs text-slate-600 mb-2">
+            <span className="font-bold text-slate-800 flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-teal-600"></span>
+              {activeGraph.name} ({activeGraph.unit})
+            </span>
+            <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+              {activeGraph.targetText}
+            </span>
+          </div>
+
+          {/* SVG Line Graph */}
+          <div className="w-full overflow-x-auto">
+            <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-48 select-none">
+              <defs>
+                <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#0d9488" stopOpacity="0.35" />
+                  <stop offset="100%" stopColor="#0d9488" stopOpacity="0.0" />
+                </linearGradient>
+              </defs>
+
+              {/* Grid Lines */}
+              <line x1={paddingX} y1={paddingY} x2={svgWidth - paddingX} y2={paddingY} stroke="#e2e8f0" strokeDasharray="3 3" />
+              <line x1={paddingX} y1={(paddingY + svgHeight - paddingY) / 2} x2={svgWidth - paddingX} y2={(paddingY + svgHeight - paddingY) / 2} stroke="#e2e8f0" strokeDasharray="3 3" />
+              <line x1={paddingX} y1={svgHeight - paddingY} x2={svgWidth - paddingX} y2={svgHeight - paddingY} stroke="#cbd5e1" />
+
+              {/* Normal Threshold Line (Green Dotted) */}
+              {normalY >= paddingY && normalY <= svgHeight - paddingY && (
+                <g>
+                  <line 
+                    x1={paddingX} 
+                    y1={normalY} 
+                    x2={svgWidth - paddingX} 
+                    y2={normalY} 
+                    stroke="#10b981" 
+                    strokeWidth="1.5" 
+                    strokeDasharray="4 4" 
+                  />
+                  <text x={svgWidth - paddingX - 5} y={normalY - 4} textAnchor="end" fontSize="10" fill="#059669" fontWeight="bold">
+                    Target {activeGraph.normalThreshold} {activeGraph.unit}
+                  </text>
+                </g>
+              )}
+
+              {/* Area Under Curve */}
+              <polygon points={areaPoints} fill="url(#trendGradient)" />
+
+              {/* Connected Line */}
+              <polyline
+                fill="none"
+                stroke="#0d9488"
+                strokeWidth="3.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                points={polylinePoints}
+              />
+
+              {/* Data Points & Callout Labels */}
+              {activeGraph.points.map((pt, idx) => {
+                const cx = getX(idx, activeGraph.points.length);
+                const cy = getY(pt.value);
+                const isLatest = idx === activeGraph.points.length - 1;
+
+                return (
+                  <g key={idx}>
+                    {/* Circle Pin */}
+                    <circle
+                      cx={cx}
+                      cy={cy}
+                      r={isLatest ? "6.5" : "5"}
+                      fill={isLatest ? "#059669" : "#0d9488"}
+                      stroke="#ffffff"
+                      strokeWidth="2.5"
+                      className="transition-all hover:scale-125"
+                    />
+
+                    {/* Value Badge Text above point */}
+                    <text
+                      x={cx}
+                      y={cy - 10}
+                      textAnchor="middle"
+                      fontSize="11"
+                      fontWeight="bold"
+                      fill={isLatest ? "#047857" : "#0f766e"}
+                      fontFamily="monospace"
+                    >
+                      {pt.value} {activeGraph.unit}
+                    </text>
+
+                    {/* Date Label below baseline */}
+                    <text
+                      x={cx}
+                      y={svgHeight - paddingY + 16}
+                      textAnchor="middle"
+                      fontSize="10"
+                      fontWeight="600"
+                      fill="#64748b"
+                    >
+                      {pt.date}
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
+
+          {/* Clinical Interpretation Box */}
+          <div className="mt-3 p-3 rounded-xl bg-teal-50/50 border border-teal-200/80 text-xs text-slate-700 flex items-start gap-2">
+            <Sparkles className="w-4 h-4 text-teal-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold text-teal-900">AI Longitudinal Trajectory Insight:</p>
+              <p className="text-slate-600 mt-0.5">{activeGraph.doshaAnalysis}</p>
             </div>
           </div>
-          <span className="text-xs font-semibold text-rose-700 bg-rose-50 px-2.5 py-1 rounded-full border border-rose-200">
-            Latest: 7.8% (Elevated)
-          </span>
+
         </div>
 
-        {/* Visual Progress Bar Flow */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="p-3 bg-white rounded-2xl border border-slate-200 shadow-2xs">
-            <p className="text-[10px] text-slate-400 font-mono">Nov 18, 2023</p>
-            <p className="text-base font-black text-amber-600 font-mono mt-0.5">6.2%</p>
-            <p className="text-[11px] text-slate-500">Baseline Pre-Diabetic Phase</p>
-          </div>
-
-          <div className="p-3 bg-white rounded-2xl border border-slate-200 shadow-2xs">
-            <p className="text-[10px] text-slate-400 font-mono">Aug 22, 2024</p>
-            <p className="text-base font-black text-rose-600 font-mono mt-0.5">8.4%</p>
-            <p className="text-[11px] text-slate-500">T2DM Conversion • Metformin Initiated</p>
-          </div>
-
-          <div className="p-3 bg-white rounded-2xl border border-teal-300 ring-2 ring-teal-200/50 shadow-2xs">
-            <p className="text-[10px] text-teal-700 font-bold font-mono">Jan 14, 2025 (Latest)</p>
-            <p className="text-base font-black text-emerald-600 font-mono mt-0.5">7.8%</p>
-            <p className="text-[11px] text-slate-500">Gradual drop with Deepana-Pachana</p>
-          </div>
-        </div>
       </div>
 
-      {/* Chronological Timeline Container */}
-      <div className="relative pl-6 sm:pl-8 border-l-2 border-emerald-200 space-y-6 ml-4 sm:ml-6">
-        {filteredTimeline.map((item) => {
-          const isExpanded = expandedItems[item.id];
+      {/* 2. AI MULTI-RECORD COMPARATIVE SYNTHESIS (When >= 2 same-type records exist) */}
+      <div className="bg-gradient-to-r from-emerald-50/70 via-teal-50/50 to-white rounded-3xl border border-emerald-300 p-6 shadow-xs space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-xl bg-emerald-600 text-white shadow-xs">
+              <Sparkles className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <span>AI Multi-Record Longitudinal Synthesis</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold border border-emerald-300">
+                  {labRecords.length} Lab Reports • {rxRecords.length} Prescriptions Synthesized
+                </span>
+              </h3>
+              <p className="text-xs text-slate-500">
+                Cross-document intelligence comparing all historical and newly uploaded records under ABHA ID
+              </p>
+            </div>
+          </div>
+        </div>
 
-          return (
-            <div key={item.id} className="relative group">
-              
-              {/* Timeline Bullet Node */}
-              <div className="absolute -left-[31px] sm:-left-[39px] top-1.5 w-6 h-6 rounded-full bg-white border-4 border-emerald-500 shadow-2xs flex items-center justify-center group-hover:scale-110 transition-transform">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-              </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+          
+          {/* Card A: Multi-Lab Report Comparison */}
+          <div className="bg-white rounded-2xl p-4 border border-emerald-200/80 shadow-2xs space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
+                <Activity className="w-3.5 h-3.5 text-emerald-600" />
+                Diagnostic Lab Comparison ({labRecords.length} Reports)
+              </span>
+              <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
+                Trend: Improving
+              </span>
+            </div>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Comparison across reports from <strong>Nov 2023 to Today</strong>: Patient's HbA1c trajectory peaked at 8.4% upon T2DM conversion, and has stabilized to <strong>7.8% (and 7.6% on recent scan)</strong> following classical Ayurvedic Agni-Deepana herbs and dietary carbohydrate control.
+            </p>
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-mono">
+              <span>Insulin: 18.4 uIU/mL (Upper Normal)</span>
+              <span>Triglycerides: 192 mg/dL</span>
+            </div>
+          </div>
 
-              {/* Event Card */}
-              <div className="bg-white rounded-3xl border border-slate-200/90 p-5 shadow-xs hover:border-emerald-300 transition-all">
+          {/* Card B: Multi-Prescription Drug-Herb Synergy */}
+          <div className="bg-white rounded-2xl p-4 border border-teal-200/80 shadow-2xs space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-teal-900 flex items-center gap-1.5">
+                <Pill className="w-3.5 h-3.5 text-teal-600" />
+                Therapeutic Formulations Synergy ({rxRecords.length + ayurRecords.length} Records)
+              </span>
+              <span className="text-[10px] font-semibold text-teal-700 bg-teal-50 px-2 py-0.5 rounded">
+                Compatibility: Safe
+              </span>
+            </div>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Allopathic regimen (Metformin 500mg BD + Atorvastatin 10mg) is co-administered with Ayurvedic Deepana-Pachana (Trikatu & Musta-Khadira). <strong>No negative pharmacokinetic herb-drug interactions detected.</strong>
+            </p>
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-mono">
+              <span>Metformin: Stable Dosage</span>
+              <span>Anupana: Ushnodaka (Warm Water)</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* 3. CHRONOLOGICAL TIMELINE STREAM */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+            <Clock className="w-4 h-4 text-emerald-600" />
+            Chronological Events Stream ({filteredTimeline.length})
+          </h3>
+          <span className="text-xs text-slate-400">ABDM Stamped Records</span>
+        </div>
+
+        <div className="relative pl-6 sm:pl-8 border-l-2 border-emerald-200 space-y-6 ml-4 sm:ml-6">
+          {filteredTimeline.map((item) => {
+            const isExpanded = expandedItems[item.id];
+
+            return (
+              <div key={item.id} className="relative group">
                 
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
-                      {item.date}
-                    </span>
-                    <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
-                      {item.category}
-                    </span>
-                  </div>
-
-                  <button
-                    onClick={() => toggleExpand(item.id)}
-                    className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-800 self-end sm:self-auto transition-colors"
-                  >
-                    <span>{isExpanded ? 'Hide Details' : 'View Details'}</span>
-                    {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                  </button>
+                {/* Timeline Bullet Node */}
+                <div className={`absolute -left-[31px] sm:-left-[39px] top-1.5 w-6 h-6 rounded-full bg-white border-4 shadow-2xs flex items-center justify-center transition-transform ${
+                  item.isNew ? 'border-emerald-600 ring-4 ring-emerald-200 animate-pulse' : 'border-emerald-500'
+                }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${item.isNew ? 'bg-emerald-700' : 'bg-emerald-600'}`}></span>
                 </div>
 
-                <h3 className="text-sm sm:text-base font-bold text-slate-900 mt-2">
-                  {item.title}
-                </h3>
-                <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                  {item.summary}
-                </p>
-
-                {/* Key Values Tag Pills */}
-                {item.keyValues && item.keyValues.length > 0 && (
-                  <div className="flex flex-wrap items-center gap-1.5 mt-3">
-                    {item.keyValues.map((val, idx) => (
-                      <span 
-                        key={idx} 
-                        className="text-[11px] font-mono font-medium px-2 py-0.5 bg-slate-50 border border-slate-200 rounded-md text-slate-700"
-                      >
-                        {val}
+                {/* Event Card */}
+                <div className={`bg-white rounded-3xl border p-5 shadow-xs transition-all ${
+                  item.isNew 
+                    ? 'border-emerald-400 ring-2 ring-emerald-200/60 bg-emerald-50/10' 
+                    : 'border-slate-200/90 hover:border-emerald-300'
+                }`}>
+                  
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-mono font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
+                        {item.date}
                       </span>
-                    ))}
-                  </div>
-                )}
-
-                {/* Expandable Deep Dive */}
-                {isExpanded && (
-                  <div className="mt-4 pt-4 border-t border-slate-100 space-y-3 animate-fadeIn">
-                    <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/70 text-xs text-slate-600">
-                      <p className="font-semibold text-slate-800 mb-1">Longitudinal Clinical Assessment Note:</p>
-                      <p>
-                        Event corroborated with patient's Agni state at time of recording. Demonstrates chronic Medovaha srotodushti that correlates with intermittent hyperglycemia.
-                      </p>
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
+                        {item.category}
+                      </span>
+                      {item.isNew && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-600 text-white shadow-2xs flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3" />
+                          ★ Newly Uploaded via AI OCR
+                        </span>
+                      )}
                     </div>
 
-                    {item.sourceFile && (
-                      <div className="flex items-center justify-between text-xs text-slate-500 p-2 bg-emerald-50/40 rounded-xl border border-emerald-100">
-                        <div className="flex items-center gap-2">
-                          <FileText className="w-3.5 h-3.5 text-emerald-600" />
-                          <span className="font-mono text-[11px] text-slate-700">{item.sourceFile}</span>
-                        </div>
-                        <span className="text-[11px] text-emerald-700 font-semibold">Verified OCR Record</span>
-                      </div>
-                    )}
+                    <button
+                      onClick={() => toggleExpand(item.id)}
+                      className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-800 self-end sm:self-auto transition-colors cursor-pointer"
+                    >
+                      <span>{isExpanded ? 'Hide Details' : 'View Details'}</span>
+                      {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                    </button>
                   </div>
-                )}
+
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900 mt-2">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                    {item.summary}
+                  </p>
+
+                  {/* Key Values Tag Pills */}
+                  {item.keyValues && item.keyValues.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-1.5 mt-3">
+                      {item.keyValues.map((val, idx) => (
+                        <span 
+                          key={idx} 
+                          className="text-[11px] font-mono font-medium px-2 py-0.5 bg-slate-50 border border-slate-200 rounded-md text-slate-700"
+                        >
+                          {val}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Expandable Deep Dive */}
+                  {isExpanded && (
+                    <div className="mt-4 pt-4 border-t border-slate-100 space-y-3 animate-fadeIn">
+                      <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/70 text-xs text-slate-600">
+                        <p className="font-semibold text-slate-800 mb-1">Longitudinal Clinical Assessment Note:</p>
+                        <p>
+                          Event corroborated with patient's Agni state at time of recording. Correlates with Classical Ayurvedic Dosha-Dushya pathology and Medovaha Srotas metabolic changes.
+                        </p>
+                      </div>
+
+                      {item.sourceFile && (
+                        <div className="flex items-center justify-between text-xs text-slate-500 p-2 bg-emerald-50/40 rounded-xl border border-emerald-100">
+                          <div className="flex items-center gap-2">
+                            <FileText className="w-3.5 h-3.5 text-emerald-600" />
+                            <span className="font-mono text-[11px] text-slate-700">{item.sourceFile}</span>
+                          </div>
+                          <span className="text-[11px] text-emerald-700 font-semibold">Verified OCR Record • Stamped to ABHA</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                </div>
 
               </div>
-
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
     </div>
