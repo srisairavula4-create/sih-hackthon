@@ -229,20 +229,131 @@ export const INITIAL_AI_SUMMARY = {
   caseId: "CASE-2025-098",
   patientId: "P-98421",
   synthesisOverview: "Dual condition evaluation: Stomach Pain (Udara Shoola & Amlapitta) managed via Deepana-Pachana herbs, alongside Chest Pain (Hrid-Shoola) with lipid elevation stabilized via Arjuna Ksheerapaka and Atorvastatin.",
-  conditions: {
-    stomachPain: {
-      name: "Stomach Pain (Udara Shoola & Amlapitta)",
-      dosha: "Pitta-Vataja in Annavaha Srotas",
-      rootCause: "Jatharagni Mandya leading to gastric mucosal irritation and delayed motility.",
-      synthesis: "Upper GI Endoscopy showed mild antral erythema without ulceration. Prescription of Pantoprazole + Sukumaram Kashayam + Avipattikar Churna provides effective mucosal shielding and restores Agni.",
-      dietaryAction: "Strictly avoid curd at night and spicy fried snacks. Drink cumin-spiced Takra after lunch."
+  lastRefreshedAt: null,
+  latestUpdatedDoc: null,
+  sources: [
+    { name: "Patient Voice Intake", date: "2025-01-12", facility: "Self-Reported" },
+    { name: "Max Healthcare Endoscopy Report", date: "2025-01-18", facility: "Max Healthcare" },
+    { name: "Fortis Escorts ECG & Lipid Panel", date: "2025-01-14", facility: "Fortis Escorts" }
+  ],
+  conflicts: [
+    {
+      id: "CONF-01",
+      parameter: "Fasting Blood Glucose",
+      priorValue: "112 mg/dL",
+      priorSource: "AIIMS Annual Health Checkup (2023-11-18)",
+      newValue: "138 mg/dL",
+      newSource: "Max Healthcare Diagnostic Panel (2025-01-18)",
+      varianceType: "Biomarker Drift Alert",
+      resolution: "Preserved with longitudinal provenance. Glycemic escalation reflects Jatharagni Mandya rather than record contradiction.",
+      status: "Preserved with Source Attribution"
     },
-    chestPain: {
-      name: "Chest Pain (Hrid-Shoola & Dyslipidemia)",
-      dosha: "Kaphaja-Vataja in Rasavaha & Medovaha Srotas",
-      rootCause: "Elevated Triglycerides (192 mg/dL) causing micro-channel congestion (Srotorodha). 12-lead ECG is normal.",
-      synthesis: "Cardiovascular evaluation confirms stable cardiac rhythm with non-infarctive exertional tightness. Atorvastatin combined with cardioprotective Arjuna Ksheerapaka strengthens myocardial endurance without drug-herb contraindications.",
-      dietaryAction: "Eliminate saturated dairy fats and bakery sugars. 30 minutes daily brisk morning walk."
+    {
+      id: "CONF-02",
+      parameter: "Serum Triglycerides",
+      priorValue: "215 mg/dL",
+      priorSource: "Baseline Lipid Screening (2024-08-10)",
+      newValue: "192 mg/dL",
+      newSource: "Fortis Escorts Cardiology Panel (2025-01-14)",
+      varianceType: "Therapeutic Trajectory",
+      resolution: "Down-trend from 215 to 192 mg/dL demonstrates therapeutic response to Atorvastatin & Arjuna Ksheerapaka. Both values preserved.",
+      status: "Preserved with Source Attribution"
     }
-  }
+  ],
+  stomachSummary: {
+    title: "AYURVEDIC CASE SUMMARY",
+    chiefComplaint: "Stomach pain",
+    duration: "2 weeks",
+    location: "Upper abdomen",
+    associatedSymptoms: "Reduced appetite, bloating",
+    previousRecords: "Endoscopy shows antral erythema [Source: Max Healthcare, 2025-01-18]",
+    previousMedications: "Pantoprazole 40 mg [Source: Max Healthcare]",
+    ayurvedicHistory: "Agni-related complaints reported; Koshtha details recorded",
+    source: "Patient voice + endoscopy report + prescription",
+    confidence: "0.91",
+    statusDraft: "Draft — Vaidya verification required",
+    differentialOptions: [
+      {
+        id: "udara_shoola",
+        name: "Udara Shoola",
+        sanskrit: "उदर शूल",
+        indication: "Vata-Pitta colicky abdominal distress",
+        description: "Severe spasmodic discomfort exacerbated by sluggish peristalsis and localized Vata-Pitta obstruction in Annavaha Srotas."
+      },
+      {
+        id: "amlapitta",
+        name: "Amlapitta",
+        sanskrit: "अम्लपित्त",
+        indication: "Acid-peptic hyperacidity disorder",
+        description: "Burning sensation in epigastrium with sour eructations, aggravated by Vidahi and Pitta-provocative dietary habits."
+      },
+      {
+        id: "parinama_shoola",
+        name: "Parinama Shoola",
+        sanskrit: "परिणाम शूल",
+        indication: "Post-prandial / duodenal phase pain",
+        description: "Discomfort intensifying during the transformation and digestion phase of Ahara, relieved after digestion is complete."
+      },
+      {
+        id: "annadrava_shoola",
+        name: "Annadrava Shoola",
+        sanskrit: "अन्नद्रव शूल",
+        indication: "Continuous acid distress regardless of meals",
+        description: "Deep gastric mucosal irritation persisting whether food is consumed or withheld, requiring intense Pitta-Shamana."
+      }
+    ]
+  },
+  chestSummary: {
+    title: "AYURVEDIC CASE SUMMARY",
+    chiefComplaint: "Chest pain",
+    duration: "3 weeks",
+    location: "Retro-sternal / Left precordium",
+    associatedSymptoms: "Exertional tightness, mild breathlessness, morning heaviness",
+    previousRecords: "12-Lead ECG shows normal sinus rhythm; Triglycerides 192 mg/dL [Source: Fortis Escorts, 2025-01-14]",
+    previousMedications: "Tab. Atorvastatin 10 mg, Tab. Metformin 500 mg [Source: Fortis Escorts]",
+    ayurvedicHistory: "Rasavaha & Medovaha Sroto-rodha reported; Dhatvagni Mandya recorded",
+    source: "Patient voice + ECG report + cardiology prescription",
+    confidence: "0.94",
+    statusDraft: "Draft — Vaidya verification required",
+    differentialOptions: [
+      {
+        id: "hrid_shoola",
+        name: "Hrid-Shoola (Kaphaja-Vataja)",
+        sanskrit: "हृच्छूल",
+        indication: "Anginal chest heaviness with channel congestion",
+        description: "Constricting retro-sternal heaviness and discomfort due to Kapha-Vata blockage in Rasavaha and Medovaha micro-channels."
+      },
+      {
+        id: "kaphaja_hridroga",
+        name: "Kaphaja Hridroga",
+        sanskrit: "कफज हृद्रोग",
+        indication: "Cardiovascular stagnation & sluggish circulation",
+        description: "Persistent precordial fullness, lethargy, and dyslipidemia causing diminished cardiac pump dynamism."
+      },
+      {
+        id: "medovaha_srotorodha",
+        name: "Medovaha Srotorodha",
+        sanskrit: "मेदोवह स्रोतोरोध",
+        indication: "Atherogenic vascular channel occlusion",
+        description: "Metabolic endotoxins (Ama) and excessive Medo-Dhatu narrowing peripheral and coronary micro-vascular beds."
+      },
+      {
+        id: "uras_toda",
+        name: "Uras-Toda / Kostha-Vata",
+        sanskrit: "उरस्तॊद",
+        indication: "Gastric upward gas reflex radiating to chest",
+        description: "Pratiloma Vata from sluggish gastro-intestinal emptying pressing upward against the diaphragm and mimicking angina."
+      }
+    ]
+  },
+  rogaNidana: {
+    vyadhi: "Udara Shoola & Hrid-Shoola (Amlapitta & Medo-Dhatu Vikriti)",
+    dosha: "Pitta-Vata in Annavaha; Kapha-Vata in Rasavaha Srotas",
+    dushya: "Rasa, Meda, and Mamsa Dhatus",
+    agni: "Vishamagni with Tendencies to Mandagni",
+    ama: "Kosthagata Ama present; Sroto-rodha in Rasavaha",
+    srotas: "Annavaha, Purishavaha, and Medovaha Srotas",
+    sadhyasadhyata: "Krichra Sadhya (Manageable with Ahara-Aushadha)"
+  },
+  chikitsaSutra: "Deepana-Pachana for Agni restoration, Pitta-Shamana with Vatanulomana for gastric burning, and Medohara-Hridya Rasayana for vascular clearance."
 };

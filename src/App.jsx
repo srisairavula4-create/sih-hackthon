@@ -94,7 +94,7 @@ export default function App() {
   // Persistent AI Clinical Summary
   const [aiSummary, setAiSummary] = useState(() => {
     try {
-      const saved = localStorage.getItem('ayurvaidya_summary');
+      const saved = localStorage.getItem('ayurvaidya_summary_v3');
       if (saved) return JSON.parse(saved);
     } catch (e) {}
     return INITIAL_AI_SUMMARY;
@@ -144,7 +144,7 @@ export default function App() {
 
   useEffect(() => {
     try {
-      localStorage.setItem('ayurvaidya_summary', JSON.stringify(aiSummary));
+      localStorage.setItem('ayurvaidya_summary_v3', JSON.stringify(aiSummary));
     } catch (e) {}
   }, [aiSummary]);
 
@@ -429,7 +429,7 @@ export default function App() {
       };
 
       try {
-        localStorage.setItem('ayurvaidya_summary', JSON.stringify(refreshed));
+        localStorage.setItem('ayurvaidya_summary_v3', JSON.stringify(refreshed));
       } catch (e) {}
 
       return refreshed;

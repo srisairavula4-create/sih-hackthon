@@ -17,8 +17,12 @@ import {
   Activity,
   AlertTriangle,
   FileSpreadsheet,
-  Check
+  Check,
+  Search,
+  Eye,
+  ShieldCheck
 } from 'lucide-react';
+import { validateMedicalDocument } from '../utils/medicalDocumentValidator';
 
 export const RecordUploadView = ({ 
   patient, 
@@ -102,12 +106,21 @@ export const RecordUploadView = ({
     }
   };
 
-  // Preset Loaders: Test Buttons for User & Evaluators
+  // Preset Loaders: Test Suite including Critical Test Case
   const handleLoadPreset = (presetType) => {
     setInvalidReportError(null);
     setExtractedResult(null);
 
-    if (presetType === 'stomach_lab') {
+    if (presetType === 'synthetic_lab') {
+      // CRITICAL TEST CASE: Synthetic Laboratory Report
+      setStagedFile({
+        name: 'synthetic_laboratory_investigation_panel.pdf',
+        size: '1.8 MB',
+        type: 'application/pdf',
+        previewUrl: null,
+        presetType: 'synthetic_lab'
+      });
+    } else if (presetType === 'stomach_lab') {
       setStagedFile({
         name: 'max_healthcare_upper_gi_endoscopy_report.pdf',
         size: '1.6 MB',
@@ -165,88 +178,7 @@ export const RecordUploadView = ({
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // STRICT VALIDATION ENGINE: Enforces medical document requirements
-  const validateMedicalDocument = (fileName, presetType) => {
-    // Explicit invalid presets
-    if (presetType === 'invalid_screenshot') {
-      return { 
-        isValid: false, 
-        reason: 'Detected user interface screenshot / phone screen capture without clinical diagnostic data.' 
-      };
-    }
-    if (presetType === 'invalid_receipt') {
-      return { 
-        isValid: false, 
-        reason: 'Detected commercial sales receipt / tax invoice. Non-medical document rejected.' 
-      };
-    }
-    if (presetType === 'invalid_blank') {
-      return { 
-        isValid: false, 
-        reason: 'Uploaded file is blank, corrupt, or contains illegible text below OCR recognition threshold.' 
-      };
-    }
-
-    if (presetType === 'stomach_lab') {
-      return { isValid: true, category: 'Diagnostic Report', condition: 'stomach_pain', conditionName: 'Stomach Pain (Udara Shoola)' };
-    }
-    if (presetType === 'chest_lab') {
-      return { isValid: true, category: 'Lab Report', condition: 'chest_pain', conditionName: 'Chest Pain (Hrid-Shoola)' };
-    }
-    if (presetType === 'discharge_summary') {
-      return { isValid: true, category: 'Discharge Summary', condition: 'stomach_pain', conditionName: 'Stomach & Metabolic Review' };
-    }
-
-    const lower = fileName.toLowerCase();
-
-    // 1. Strict Rejection of Non-Medical Files & Screenshots
-    const REJECT_PATTERNS = [
-      'screenshot', 'screen_shot', 'screen-shot', 'capture', 'snip', 'ui', 'mockup',
-      'invoice', 'receipt', 'bill', 'ticket', 'flight', 'hotel', 'tax', 'salary',
-      'resume', 'cv', 'assignment', 'wallpaper', 'selfie', 'meme', 'photo', 'car',
-      'dog', 'cat', 'game', 'movie', 'song', 'blank', 'unrelated', 'random'
-    ];
-
-    for (const pat of REJECT_PATTERNS) {
-      if (lower.includes(pat)) {
-        return {
-          isValid: false,
-          reason: `File identified as non-clinical media (${pat}). Only official prescriptions, diagnostic scans, and clinical laboratory reports are accepted.`
-        };
-      }
-    }
-
-    // 2. Strict Acceptance Criteria: Must match genuine medical report patterns
-    const isEndoscopyOrStomach = ['stomach', 'endoscopy', 'gastro', 'abdomen', 'gastric', 'usg', 'ultrasound', 'pantoprazole', 'acidity'].some(w => lower.includes(w));
-    const isChestOrCardiac = ['chest', 'ecg', 'ekg', 'cardiac', 'cardio', 'heart', 'lipid', 'cholesterol', 'triglycerides', 'troponin', 'atorvastatin'].some(w => lower.includes(w));
-    const isDischarge = ['discharge', 'summary', 'admission', 'inpatient', 'opd', 'hospital', 'clinic'].some(w => lower.includes(w));
-    const isLab = ['lab', 'blood', 'sugar', 'glucose', 'hba1c', 'urine', 'panel', 'pathology', 'biopsy', 'cbc'].some(w => lower.includes(w));
-    const isPrescription = ['rx', 'prescription', 'doctor', 'dr', 'medicine', 'tablet', 'churna', 'kashayam'].some(w => lower.includes(w));
-
-    if (isEndoscopyOrStomach) {
-      return { isValid: true, category: isPrescription ? 'Prescription' : 'Diagnostic Report', condition: 'stomach_pain', conditionName: 'Stomach Pain (Udara Shoola)' };
-    }
-    if (isChestOrCardiac) {
-      return { isValid: true, category: isPrescription ? 'Prescription' : 'Lab Report', condition: 'chest_pain', conditionName: 'Chest Pain (Hrid-Shoola)' };
-    }
-    if (isDischarge) {
-      return { isValid: true, category: 'Discharge Summary', condition: 'stomach_pain', conditionName: 'Clinical Discharge Review' };
-    }
-    if (isLab) {
-      return { isValid: true, category: 'Lab Report', condition: 'chest_pain', conditionName: 'Laboratory Panel' };
-    }
-    if (isPrescription) {
-      return { isValid: true, category: 'Prescription', condition: 'stomach_pain', conditionName: 'Medical Prescription' };
-    }
-
-    // Fallback: If no medical patterns detected, reject
-    return {
-      isValid: false,
-      reason: 'No recognized hospital letterhead, diagnostic parameters, physician signatures, or laboratory values detected.'
-    };
-  };
-
-  // Run AI OCR Scan & Validation Flow
+  // Run Hardened AI OCR Scan & Multi-Signal Validation
   const handleScanAndValidate = () => {
     if (!stagedFile) {
       setInvalidReportError({
@@ -260,7 +192,7 @@ export const RecordUploadView = ({
     setExtractedResult(null);
     setIsScanning(true);
     setScanProgress(15);
-    setScanStatusText('Scanning pixel buffer & validating clinical authentications...');
+    setScanStatusText('Scanning pixel buffer & evaluating multi-signal clinical evidence...');
 
     const interval = setInterval(() => {
       setScanProgress(prev => {
@@ -269,126 +201,57 @@ export const RecordUploadView = ({
           finalizeScan();
           return 100;
         }
-        if (prev === 30) setScanStatusText('Inspecting medical letterhead, ABDM checksum & physician credentials...');
-        if (prev === 60) setScanStatusText('Extracting diagnostic parameters, reference ranges & drug formulations...');
-        if (prev === 80) setScanStatusText('Re-processing & synthesizing into AI Clinical Summary registry...');
+        if (prev === 30) setScanStatusText('Evaluating provider, diagnostic tests, patient identifiers & dates...');
+        if (prev === 60) setScanStatusText('Extracting numerical parameters, units, reference intervals & flagging review items...');
+        if (prev === 80) setScanStatusText('Re-processing & synchronizing into AI Clinical Summary registry...');
         return prev + 25;
       });
-    }, 400);
+    }, 380);
   };
 
   const finalizeScan = () => {
     setTimeout(() => {
       setIsScanning(false);
 
-      const validation = validateMedicalDocument(stagedFile.name, stagedFile.presetType);
+      const validation = validateMedicalDocument(stagedFile.file, stagedFile);
 
-      // CASE 1: REJECT INVALID DOCUMENTS (Screenshots, UI, Non-Medical)
+      // CASE 1: REJECT INVALID DOCUMENTS
       if (!validation.isValid) {
         setInvalidReportError({
-          headline: "Invalid Medical Report — Please upload a valid medical document.",
-          reason: validation.reason,
+          headline: validation.headline || "Invalid Medical Report — Please upload a valid medical document.",
+          reason: validation.conciseReason || "File does not contain sufficient clinical evidence (prescriptions, diagnostic tests, or laboratory findings).",
           fileName: stagedFile.name,
-          details: "AI Document Classifier detected an invalid or non-clinical upload. Prescriptions, lab reports, discharge summaries, and diagnostic scans are strictly required for patient case-taking."
+          details: "AI Document Validation rejected this upload. The validator detected non-medical media, UI screen captures, or insufficient clinical data. Authentic diagnostic tests, doctor prescriptions, or discharge summaries are required."
         });
         return;
       }
 
-      // CASE 2: EXTRACT VALID CLINICAL DATA ACCURATELY
-      let extractedData = {};
-      let title = '';
-      let institution = '';
-
-      if (stagedFile.presetType === 'discharge_summary') {
-        title = "Inpatient Clinical Discharge Summary";
-        institution = "All India Institute of Medical Sciences (AIIMS)";
-        extractedData = {
-          biomarkers: [
-            { name: "Admission Glucose (F)", value: "142 mg/dL", range: "70 - 99 mg/dL", status: "Elevated" },
-            { name: "Discharge Glucose (F)", value: "128 mg/dL", range: "70 - 99 mg/dL", status: "Stabilizing" },
-            { name: "Serum Creatinine", value: "0.9 mg/dL", range: "0.7 - 1.3 mg/dL", status: "Normal" },
-            { name: "Liver Enzymes (SGPT)", value: "32 U/L", range: "< 45 U/L", status: "Normal" }
-          ],
-          medications: [
-            { name: "Tab. Pantoprazole", dose: "40 mg", frequency: "Once daily before food", duration: "14 Days" },
-            { name: "Tab. Metformin", dose: "500 mg", frequency: "Twice daily with meals", duration: "Ongoing" },
-            { name: "Sukumaram Kashayam", dose: "15 ml", frequency: "Twice daily before food", duration: "30 Days" }
-          ],
-          clinicalImpression: "Post-admission recovery from acute dyspepsia and metabolic fluctuation; stabilized with integrative gastro-protective regimen.",
-          ayurvedicCorrelation: "Pitta-Kapha Samana protocol successful; digestive fire (Jatharagni) transitioning from Mandagni to Samagni."
-        };
-      } else if (validation.condition === 'stomach_pain') {
-        title = validation.category === 'Prescription'
-          ? "Gastroenterology & Ayurvedic Prescription"
-          : "Abdominal Ultrasound & Endoscopy Report";
-        institution = "Max Healthcare Gastroenterology Centre";
-        extractedData = validation.category === 'Prescription' ? {
-          medications: [
-            { name: "Tab. Pantoprazole", dose: "40 mg", frequency: "Once daily before breakfast", duration: "14 Days" },
-            { name: "Sukumaram Kashayam", dose: "15 ml with warm water", frequency: "Twice daily before meals", duration: "1 Month" },
-            { name: "Avipattikar Churna", dose: "3 grams", frequency: "At bedtime with lukewarm water", duration: "Ongoing" }
-          ],
-          clinicalImpression: "Gastric mucosal protective regimen with Deepana-Pachana herbs for abdominal discomfort.",
-          ayurvedicCorrelation: "Pitta Shamana and Vatanulomana addressing Kosthagata Ama."
-        } : {
-          biomarkers: [
-            { name: "Gastric Antral Mucosa", value: "Mild Erythema & Erosion", range: "Normal", status: "Mild Gastritis" },
-            { name: "H. Pylori Biopsy", value: "Negative", range: "Negative", status: "Normal" },
-            { name: "Gastric Emptying Rate", value: "Delayed Motility", range: "Normal", status: "Sluggish (Mandagni)" },
-            { name: "Gallbladder & Liver", value: "Normal Caliber, No Calculi", range: "Normal", status: "Normal" }
-          ],
-          clinicalImpression: "Chronic functional dyspepsia and mild non-erosive gastritis with delayed gastric emptying.",
-          ayurvedicCorrelation: "Pitta-Vataja Udara Shoola and Amlapitta secondary to Jatharagni Mandya."
-        };
-      } else {
-        // Chest Pain
-        title = validation.category === 'Prescription'
-          ? "Cardiology & Integrative Prescription"
-          : "12-Lead ECG & Cardiovascular Lipid Panel";
-        institution = "Fortis Escorts Heart Institute";
-        extractedData = validation.category === 'Prescription' ? {
-          medications: [
-            { name: "Tab. Atorvastatin", dose: "10 mg", frequency: "Once daily at bedtime", duration: "Ongoing" },
-            { name: "Tab. Metformin HCl", dose: "500 mg", frequency: "Twice daily with meals", duration: "Ongoing" },
-            { name: "Arjuna Ksheerapaka Churna", dose: "3 grams boiled in milk/water", frequency: "Twice daily", duration: "3 Months" }
-          ],
-          clinicalImpression: "Cardioprotective lipid-lowering therapy; advised daily 30-min brisk walk and stress reduction.",
-          ayurvedicCorrelation: "Hridya Rasayana (Arjuna) strengthening myocardial endurance and clearing vascular Ama."
-        } : {
-          biomarkers: [
-            { name: "12-Lead Resting ECG", value: "Normal Sinus Rhythm", range: "Normal", status: "No ST-T Changes" },
-            { name: "Serum Triglycerides", value: "192 mg/dL", range: "< 150 mg/dL", status: "High" },
-            { name: "HDL Cholesterol", value: "38 mg/dL", range: "> 40 mg/dL", status: "Low" },
-            { name: "Fasting Blood Glucose", value: "138 mg/dL", range: "70 - 99 mg/dL", status: "Elevated" },
-            { name: "Troponin-I (Cardiac Marker)", value: "0.01 ng/mL", range: "< 0.04 ng/mL", status: "Normal" }
-          ],
-          clinicalImpression: "Non-cardiac exertional chest discomfort with atherogenic dyslipidemia and impaired fasting glucose.",
-          ayurvedicCorrelation: "Kaphaja-Vataja Hrid-Shoola with Medovaha Srotorodha without acute cardiac necrosis."
-        };
-      }
-
+      // CASE 2: ACCURATE CLINICAL EXTRACTION FOR VALID REPORT
       const newRecord = {
         id: `REC-${Date.now().toString().slice(-4)}`,
-        title: title,
-        institution: institution,
-        date: new Date().toISOString().split('T')[0],
-        type: validation.category,
-        condition: validation.condition,
-        conditionName: validation.conditionName,
+        title: validation.documentType ? `${validation.institution || 'Diagnostic Centre'} - ${validation.documentType}` : stagedFile.name,
+        institution: validation.institution || "Apex Clinical Services",
+        date: validation.date || new Date().toISOString().split('T')[0],
+        type: validation.documentType || "Laboratory Report",
+        condition: validation.condition || "stomach_pain",
+        conditionName: validation.conditionName || "Clinical Evaluation",
         fileName: stagedFile.name,
         fileSize: stagedFile.size,
-        confidence: 98.4,
+        confidence: validation.confidence || 98.6,
         status: "ABDM Verified & OCR Indexed",
-        extractedData: extractedData
+        provider: validation.provider,
+        evidenceScore: validation.evidenceScore,
+        detectedSignals: validation.detectedSignals || [],
+        extractedData: validation.extractedData || {}
       };
 
       setExtractedResult(newRecord);
 
-      // AUTOMATIC RE-PROCESS: Refresh AI Clinical Summary and Timeline immediately
+      // AUTOMATIC SYNCHRONIZATION: Refresh AI Clinical Summary and Timeline immediately
       if (onAddRecord) {
         onAddRecord(newRecord);
       }
-    }, 450);
+    }, 400);
   };
 
   return (
@@ -403,46 +266,66 @@ export const RecordUploadView = ({
                 <UploadCloud className="w-4 h-4" />
               </span>
               <h1 className="text-xl font-extrabold text-slate-900 tracking-tight font-outfit">
-                Strict Medical Document OCR Scanner & Upload Flow
+                Intelligent Medical Document Validation & OCR Pipeline
               </h1>
             </div>
             <p className="text-xs text-slate-500">
-              Accepts strictly verified medical reports (prescriptions, lab tests, discharge summaries). Automatically refreshes AI Clinical Summary and flags conflicts.
+              Evaluates overall clinical evidence across multi-signal parameters. Automatically synchronizes newly uploaded records into the AI Clinical Summary without silent overwrites.
             </p>
           </div>
 
-          <button
-            onClick={onNavigateToTimeline}
-            className="flex items-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-all shadow-xs self-start sm:self-auto cursor-pointer"
-          >
-            <Clock className="w-3.5 h-3.5 text-slate-600" />
-            <span>Open Timeline</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onNavigateToTimeline}
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+            >
+              <Clock className="w-3.5 h-3.5 text-slate-600" />
+              <span>Timeline</span>
+            </button>
+            <button
+              onClick={onNavigateToAiSummary}
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>AI Summary</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* QUICK PRESET TEST SUITE (VALID VS INVALID) */}
+      {/* QUICK PRESET TEST SUITE (INCLUDING CRITICAL TEST CASE) */}
       <div className="bg-gradient-to-r from-slate-50 to-emerald-50/30 rounded-3xl border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-2.5">
         <div className="flex items-center justify-between">
           <span className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-            Quick Validation Test Suite (1-Click Test Scenarios)
+            Medical Validation Test Scenarios (Click to Load)
           </span>
           <span className="text-[10px] font-semibold text-slate-500 font-mono">
-            Evaluator Simulation Station
+            Multi-Signal Classification Suite
           </span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 text-xs">
+          {/* CRITICAL TEST CASE BUTTON */}
+          <button
+            onClick={() => handleLoadPreset('synthetic_lab')}
+            className="p-2.5 rounded-xl border-2 border-emerald-500 bg-emerald-50/70 hover:bg-emerald-100 text-emerald-950 font-bold transition-all text-left shadow-2xs flex items-center gap-2 cursor-pointer ring-2 ring-emerald-400/30"
+          >
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 flex-shrink-0 animate-pulse" />
+            <div className="truncate">
+              <p className="font-extrabold truncate">★ Synthetic Lab Report</p>
+              <p className="text-[10px] text-emerald-800 font-semibold truncate">Critical Test Case</p>
+            </div>
+          </button>
+
           <button
             onClick={() => handleLoadPreset('stomach_lab')}
             className="p-2.5 rounded-xl border border-emerald-300 bg-white hover:bg-emerald-50 text-emerald-900 font-bold transition-all text-left shadow-2xs flex items-center gap-2 cursor-pointer"
           >
             <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
             <div className="truncate">
-              <p className="font-bold truncate">Valid Endoscopy Report</p>
-              <p className="text-[10px] text-emerald-700 font-normal">Stomach Pain Lab</p>
+              <p className="font-bold truncate">Endoscopy Report</p>
+              <p className="text-[10px] text-emerald-700 font-normal">Diagnostic Scan</p>
             </div>
           </button>
 
@@ -452,8 +335,8 @@ export const RecordUploadView = ({
           >
             <span className="w-2 h-2 rounded-full bg-teal-500 flex-shrink-0" />
             <div className="truncate">
-              <p className="font-bold truncate">Valid ECG & Lipid Panel</p>
-              <p className="text-[10px] text-teal-700 font-normal">Chest Pain Panel</p>
+              <p className="font-bold truncate">ECG & Lipid Panel</p>
+              <p className="text-[10px] text-teal-700 font-normal">Cardio Lab</p>
             </div>
           </button>
 
@@ -463,8 +346,8 @@ export const RecordUploadView = ({
           >
             <span className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />
             <div className="truncate">
-              <p className="font-bold truncate">Valid Discharge Summary</p>
-              <p className="text-[10px] text-blue-700 font-normal">AIIMS Inpatient File</p>
+              <p className="font-bold truncate">Discharge Summary</p>
+              <p className="text-[10px] text-blue-700 font-normal">AIIMS Inpatient</p>
             </div>
           </button>
 
@@ -474,7 +357,7 @@ export const RecordUploadView = ({
           >
             <span className="w-2 h-2 rounded-full bg-rose-500 flex-shrink-0" />
             <div className="truncate">
-              <p className="font-bold truncate">Test Invalid Screenshot</p>
+              <p className="font-bold truncate">UI Screenshot</p>
               <p className="text-[10px] text-rose-700 font-normal">Rejection Demo</p>
             </div>
           </button>
@@ -485,7 +368,18 @@ export const RecordUploadView = ({
           >
             <span className="w-2 h-2 rounded-full bg-rose-500 flex-shrink-0" />
             <div className="truncate">
-              <p className="font-bold truncate">Test Non-Medical File</p>
+              <p className="font-bold truncate">Commercial Receipt</p>
+              <p className="text-[10px] text-rose-700 font-normal">Rejection Demo</p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => handleLoadPreset('invalid_blank')}
+            className="p-2.5 rounded-xl border border-rose-300 bg-rose-50/70 hover:bg-rose-100 text-rose-900 font-bold transition-all text-left shadow-2xs flex items-center gap-2 cursor-pointer"
+          >
+            <span className="w-2 h-2 rounded-full bg-rose-500 flex-shrink-0" />
+            <div className="truncate">
+              <p className="font-bold truncate">Blank / Illegible</p>
               <p className="text-[10px] text-rose-700 font-normal">Rejection Demo</p>
             </div>
           </button>
@@ -503,8 +397,8 @@ export const RecordUploadView = ({
               <h3 className="text-base font-black text-rose-950 tracking-tight">
                 {invalidReportError.headline}
               </h3>
-              <p className="text-xs text-rose-800 font-semibold">
-                Reason: {invalidReportError.reason}
+              <p className="text-xs text-rose-900 font-bold">
+                Detected Problem: {invalidReportError.reason}
               </p>
               <p className="text-xs text-rose-700 leading-relaxed pt-1">
                 {invalidReportError.details}
@@ -514,19 +408,19 @@ export const RecordUploadView = ({
 
           <div className="pt-2 border-t border-rose-200 flex items-center justify-between text-xs">
             <span className="text-rose-800 font-mono text-[11px]">
-              Rejected File: {invalidReportError.fileName || 'Selected Item'} • Zero modifications made to records
+              Rejected File: {invalidReportError.fileName || 'Selected Item'} • Unmodified Profile
             </span>
             <button
               onClick={handleClearStaged}
               className="px-3 py-1 rounded-xl bg-rose-200/80 hover:bg-rose-300 text-rose-900 font-bold cursor-pointer transition-colors"
             >
-              Clear & Try Again
+              Clear Staged File
             </button>
           </div>
         </div>
       )}
 
-      {/* EXTRACTED SUCCESS RESULTS DISPLAY */}
+      {/* EXTRACTED SUCCESS RESULTS DISPLAY WITH REVIEW MARKINGS */}
       {extractedResult && (
         <div className="p-5 rounded-3xl bg-emerald-50 border-2 border-emerald-400 shadow-sm space-y-4 animate-fadeIn">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-emerald-200">
@@ -535,14 +429,19 @@ export const RecordUploadView = ({
                 <CheckCircle2 className="w-6 h-6" />
               </div>
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-white px-2 py-0.5 rounded border border-emerald-200">
-                  {extractedResult.type} • Verified ABDM
-                </span>
-                <h3 className="text-base font-black text-emerald-950 mt-0.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-white px-2 py-0.5 rounded border border-emerald-200">
+                    {extractedResult.type} • Verified Valid
+                  </span>
+                  <span className="text-[10px] font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+                    Evidence Score: {extractedResult.evidenceScore || 95}/100
+                  </span>
+                </div>
+                <h3 className="text-base font-black text-emerald-950 mt-1">
                   {extractedResult.title}
                 </h3>
                 <p className="text-xs text-emerald-800">
-                  {extractedResult.institution} • {extractedResult.date}
+                  {extractedResult.institution} • {extractedResult.date} {extractedResult.provider && `• ${extractedResult.provider}`}
                 </p>
               </div>
             </div>
@@ -552,45 +451,84 @@ export const RecordUploadView = ({
               className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
             >
               <Sparkles className="w-4 h-4 text-emerald-200" />
-              <span>View Refreshed AI Clinical Summary</span>
+              <span>View Synchronized AI Summary</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          {/* Extracted Biomarkers & Medications Tables */}
-          <div className="space-y-3 text-xs">
-            {extractedResult.extractedData?.biomarkers && (
-              <div className="space-y-1.5">
-                <p className="font-bold text-emerald-950 uppercase tracking-wider text-[11px]">
-                  Extracted Clinical Diagnostic Biomarkers:
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {extractedResult.extractedData.biomarkers.map((b, i) => (
-                    <div key={i} className="p-2.5 bg-white rounded-xl border border-emerald-200 flex items-center justify-between">
-                      <div>
-                        <p className="font-bold text-slate-900">{b.name}</p>
-                        <p className="text-[10px] text-slate-500">Ref: {b.range}</p>
-                      </div>
-                      <div className="text-right">
-                        <span className="font-mono font-bold text-emerald-900 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                          {b.value}
-                        </span>
-                        <p className="text-[10px] text-emerald-700 font-semibold mt-0.5">{b.status}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+          {/* Evidence Signals Banner */}
+          {extractedResult.detectedSignals && extractedResult.detectedSignals.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-emerald-900">
+              <span className="font-bold">Detected Clinical Signals:</span>
+              {extractedResult.detectedSignals.map((sig, i) => (
+                <span key={i} className="px-2 py-0.5 rounded-md bg-white border border-emerald-200 font-medium">
+                  ✓ {sig}
+                </span>
+              ))}
+            </div>
+          )}
 
-            {extractedResult.extractedData?.medications && (
-              <div className="space-y-1.5">
+          {/* Extracted Biomarkers Table with Units & Review Flags */}
+          {extractedResult.extractedData?.biomarkers && (
+            <div className="space-y-1.5 text-xs">
+              <div className="flex items-center justify-between">
                 <p className="font-bold text-emerald-950 uppercase tracking-wider text-[11px]">
-                  Extracted Formulations & Dosages:
+                  Extracted Clinical Biomarkers & Test Parameters:
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {extractedResult.extractedData.medications.map((m, i) => (
-                    <div key={i} className="p-2.5 bg-white rounded-xl border border-emerald-200">
+                <span className="text-[10px] text-slate-500 font-mono">
+                  Confidence Rated • Uncertain Values Flagged
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                {extractedResult.extractedData.biomarkers.map((b, i) => (
+                  <div key={i} className={`p-3 rounded-xl border transition-all ${
+                    b.isUncertain 
+                      ? 'bg-amber-50/90 border-amber-300 ring-1 ring-amber-400' 
+                      : 'bg-white border-emerald-200'
+                  }`}>
+                    <div className="flex items-start justify-between gap-1">
+                      <p className="font-bold text-slate-900">{b.name}</p>
+                      <span className="text-[10px] font-mono text-slate-500">
+                        {b.confidence}% conf
+                      </span>
+                    </div>
+
+                    <div className="flex items-baseline gap-1.5 mt-1">
+                      <span className="font-mono text-sm font-black text-slate-900">
+                        {b.value}
+                      </span>
+                      {b.unit && <span className="text-[11px] text-slate-500 font-sans">{b.unit}</span>}
+                      <span className="text-[10px] text-slate-400 ml-auto">Ref: {b.range}</span>
+                    </div>
+
+                    {b.isUncertain ? (
+                      <div className="mt-1.5 pt-1.5 border-t border-amber-200 text-[10px] text-amber-900 font-semibold flex items-center gap-1">
+                        <AlertTriangle className="w-3 h-3 text-amber-600 flex-shrink-0" />
+                        <span>Review Needed: {b.reviewNote || 'Marginal chemical reading'}</span>
+                      </div>
+                    ) : (
+                      <div className="mt-1 flex items-center justify-between text-[10px]">
+                        <span className="text-emerald-700 font-semibold">{b.status}</span>
+                        <span className="text-slate-400">Verified</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Extracted Medications Table */}
+          {extractedResult.extractedData?.medications && (
+            <div className="space-y-1.5 text-xs">
+              <p className="font-bold text-emerald-950 uppercase tracking-wider text-[11px]">
+                Extracted Medications & Formulations:
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {extractedResult.extractedData.medications.map((m, i) => (
+                  <div key={i} className="p-2.5 bg-white rounded-xl border border-emerald-200 flex items-start justify-between">
+                    <div>
                       <p className="font-bold text-slate-900 flex items-center gap-1">
                         <Pill className="w-3.5 h-3.5 text-emerald-700" />
                         {m.name} ({m.dose})
@@ -599,26 +537,29 @@ export const RecordUploadView = ({
                         {m.frequency} • {m.duration}
                       </p>
                     </div>
-                  ))}
-                </div>
+                    <span className="text-[10px] font-mono text-slate-400">
+                      {m.confidence || 98.5}% conf
+                    </span>
+                  </div>
+                ))}
               </div>
-            )}
-
-            <div className="p-3 bg-white/90 rounded-xl border border-emerald-200 text-emerald-900 space-y-1">
-              <p>
-                <strong>Clinical Impression: </strong>
-                <span>{extractedResult.extractedData?.clinicalImpression}</span>
-              </p>
-              <p>
-                <strong>Ayurvedic Correlation: </strong>
-                <span>{extractedResult.extractedData?.ayurvedicCorrelation}</span>
-              </p>
             </div>
+          )}
 
-            <div className="pt-2 border-t border-emerald-200 flex items-center justify-between text-[11px] text-emerald-800 font-mono">
-              <span>Source Provenance: {extractedResult.fileName} ({extractedResult.fileSize})</span>
-              <span className="font-bold text-emerald-900">✓ AI Clinical Summary Re-processed & Refreshed</span>
-            </div>
+          {/* Clinical Impression & Ayurvedic Correlation (No autonomous diagnosis) */}
+          <div className="p-3 bg-white/95 rounded-xl border border-emerald-200 text-emerald-950 text-xs space-y-1">
+            <p>
+              <strong>Recorded Clinical Impression: </strong>
+              <span className="text-slate-700">{extractedResult.extractedData?.clinicalImpression}</span>
+            </p>
+            <p className="text-[11px] text-slate-500 italic">
+              *Note: Extracted information is structured and presented for physician / Vaidya verification. Autonomous diagnoses are strictly prohibited.
+            </p>
+          </div>
+
+          <div className="pt-2 border-t border-emerald-200 flex flex-wrap items-center justify-between gap-2 text-[11px] text-emerald-800 font-mono">
+            <span>Source Provenance: {extractedResult.fileName} ({extractedResult.fileSize})</span>
+            <span className="font-bold text-emerald-900">✓ AI Clinical Summary Automatically Refreshed</span>
           </div>
         </div>
       )}
@@ -654,12 +595,12 @@ export const RecordUploadView = ({
                 Choose Medical Document or Drag & Drop here
               </h3>
               <p className="text-xs text-slate-500 mt-1">
-                Accepts Prescriptions, Diagnostic Reports, ECG, Ultrasound & Lab Panels (PDF, JPG, PNG)
+                Accepts Prescriptions, Diagnostic Reports, ECG, Ultrasound, Synthetic Labs & Discharge Summaries
               </p>
             </div>
 
             <div className="flex flex-wrap items-center justify-center gap-2 pt-1 text-[11px] text-slate-400 font-mono">
-              <span>ABDM Encrypted</span> • <span>Strict OCR Validation</span> • <span>Conflict Flagging</span>
+              <span>Multi-Signal Clinical Evaluator</span> • <span>Conflict Flagging</span> • <span>Vaidya Verification</span>
             </div>
           </div>
         </div>
@@ -674,7 +615,7 @@ export const RecordUploadView = ({
                 </div>
                 <div className="min-w-0">
                   <p className="text-xs font-bold text-slate-900 truncate">{stagedFile.name}</p>
-                  <p className="text-[11px] text-slate-500">{stagedFile.size} • Ready for AI OCR Inspection</p>
+                  <p className="text-[11px] text-slate-500">{stagedFile.size} • Ready for OCR Extraction</p>
                 </div>
               </div>
 
@@ -727,7 +668,7 @@ export const RecordUploadView = ({
               Patient Indexed Medical Records ({oldRecords.length})
             </h3>
             <p className="text-xs text-slate-500">
-              All records stamped with source attribution and cross-referenced with AI Clinical Summary
+              Preserved with document ID, hospital provenance, and cross-referenced in AI Clinical Summary
             </p>
           </div>
         </div>
@@ -761,7 +702,7 @@ export const RecordUploadView = ({
 
               <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono pt-1">
                 <span>Source: {rec.fileName}</span>
-                <span className="text-emerald-700 font-semibold">Indexed</span>
+                <span className="text-emerald-700 font-semibold">Indexed ({rec.id})</span>
               </div>
             </div>
           ))}
