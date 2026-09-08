@@ -1,7 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { 
   Clock, 
-  Calendar, 
   Filter, 
   FileText, 
   Activity, 
@@ -9,17 +8,10 @@ import {
   Sparkles, 
   ChevronDown, 
   ChevronUp, 
-  TrendingUp, 
+  LineChart, 
   CheckCircle2, 
-  Eye, 
-  ArrowUpRight,
-  Stethoscope,
-  BarChart2,
-  Layers,
-  LineChart,
-  ShieldCheck,
-  Building2,
-  ArrowRight
+  ArrowRight,
+  ShieldCheck
 } from 'lucide-react';
 
 export const TimelineView = ({ 
@@ -28,10 +20,9 @@ export const TimelineView = ({
   oldRecords = [], 
   onNavigateToUpload 
 }) => {
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [selectedMetric, setSelectedMetric] = useState('hba1c'); // 'hba1c' | 'glucose' | 'triglycerides' | 'weight'
-  
-  // Track expanded items (by default, expand any item that has isNew === true or the first two items)
+  const [selectedCategory, setSelectedCategory] = useState('All Records');
+  const [selectedMetric, setSelectedMetric] = useState('triglycerides');
+
   const [expandedItems, setExpandedItems] = useState(() => {
     const initial = {};
     timeline.forEach((item, idx) => {
@@ -49,90 +40,90 @@ export const TimelineView = ({
     }));
   };
 
-  const categories = ['All', 'Lab Report', 'Prescription', 'Ayurvedic Consultation', 'Vitals'];
+  const categories = [
+    'All Records', 
+    '🩺 Stomach Pain', 
+    '❤️ Chest Pain', 
+    'Lab Reports', 
+    'Prescriptions'
+  ];
 
-  const filteredTimeline = selectedCategory === 'All'
+  const filteredTimeline = selectedCategory === 'All Records'
     ? timeline
     : timeline.filter(item => {
-        if (selectedCategory === 'Lab Report') {
-          return item.category === 'Lab Report' || item.category === 'Imaging & Ultrasound';
+        if (selectedCategory === '🩺 Stomach Pain') {
+          return item.condition === 'stomach_pain' || item.title.toLowerCase().includes('stomach') || item.title.toLowerCase().includes('endoscopy') || item.title.toLowerCase().includes('gastro');
         }
-        return item.category === selectedCategory;
+        if (selectedCategory === '❤️ Chest Pain') {
+          return item.condition === 'chest_pain' || item.title.toLowerCase().includes('chest') || item.title.toLowerCase().includes('ecg') || item.title.toLowerCase().includes('cardio') || item.title.toLowerCase().includes('lipid');
+        }
+        if (selectedCategory === 'Lab Reports') {
+          return item.category === 'Lab Report';
+        }
+        if (selectedCategory === 'Prescriptions') {
+          return item.category === 'Prescription';
+        }
+        return true;
       });
 
-  // Calculate counts for same-type records
-  const labRecords = timeline.filter(t => t.category === 'Lab Report' || t.category === 'Imaging & Ultrasound');
-  const rxRecords = timeline.filter(t => t.category === 'Prescription');
-  const ayurRecords = timeline.filter(t => t.category === 'Ayurvedic Consultation');
+  // Dual Condition Separation for Side-by-Side AI Summary
+  const stomachEvents = timeline.filter(t => 
+    t.condition === 'stomach_pain' || 
+    t.title.toLowerCase().includes('stomach') || 
+    t.title.toLowerCase().includes('endoscopy') ||
+    t.title.toLowerCase().includes('gastro')
+  );
 
-  // GRAPH DATA CONFIGURATION (Combines baseline history with all uploaded records)
+  const chestEvents = timeline.filter(t => 
+    t.condition === 'chest_pain' || 
+    t.title.toLowerCase().includes('chest') || 
+    t.title.toLowerCase().includes('ecg') ||
+    t.title.toLowerCase().includes('cardio') ||
+    t.title.toLowerCase().includes('lipid')
+  );
+
+  // Graph Data
   const graphConfigs = {
-    hba1c: {
-      name: "HbA1c (Glycated Hemoglobin)",
-      unit: "%",
-      targetText: "Optimal Target: < 5.7%",
-      normalThreshold: 5.7,
+    triglycerides: {
+      name: "Serum Triglycerides (Chest Pain / Lipid Track)",
+      unit: "mg/dL",
+      targetText: "Normal: < 150 mg/dL",
+      normalThreshold: 150,
       points: [
-        { date: "Nov 18, 2023", value: 6.2, label: "Baseline (Pre-diabetic)", center: "AIIMS Delhi" },
-        { date: "Aug 22, 2024", value: 8.4, label: "Peak T2DM (Metformin Start)", center: "Fortis Hospital" },
-        { date: "Jan 14, 2025", value: 7.8, label: "Deepana-Pachana Response", center: "Apollo Diagnostics" },
-        // If user uploaded a new lab record, add modern point
-        ...(timeline.some(t => t.isNew && t.category === 'Lab Report') ? [
-          { date: "Today (Verified)", value: 7.6, label: "Latest AI OCR Stamped Record", center: "Dr. Lal PathLabs" }
-        ] : [])
+        { date: "Aug 2024", value: 215, label: "Peak Congestion" },
+        { date: "Nov 2024", value: 202, label: "Dietary Intervention" },
+        { date: "Jan 2025", value: 192, label: "Latest Verified" }
       ],
-      doshaAnalysis: "HbA1c dropped from peak 8.4% to 7.8% (and 7.6% latest) under Nishamalaki and carbohydrate restriction, indicating positive clearing of Medovaha Srotorodha."
+      insight: "Triglycerides dropped from 215 to 192 mg/dL with Atorvastatin & Arjuna Ksheerapaka, reducing Medo-Dhatu Srotorodha."
     },
     glucose: {
       name: "Fasting Blood Glucose",
       unit: "mg/dL",
-      targetText: "Normal Range: 70 - 99 mg/dL",
+      targetText: "Normal: 70 - 99 mg/dL",
       normalThreshold: 100,
       points: [
-        { date: "Nov 18, 2023", value: 112, label: "Mild Impairment", center: "AIIMS Delhi" },
-        { date: "Aug 22, 2024", value: 168, label: "Symptomatic Peak", center: "Fortis Hospital" },
-        { date: "Jan 14, 2025", value: 142, label: "Post-Therapy Stabilization", center: "Apollo Diagnostics" },
-        ...(timeline.some(t => t.isNew && t.category === 'Lab Report') ? [
-          { date: "Today (Verified)", value: 136, label: "Recent Fasting Record", center: "Dr. Lal PathLabs" }
-        ] : [])
+        { date: "Aug 2024", value: 156, label: "Elevated" },
+        { date: "Nov 2024", value: 144, label: "Improving" },
+        { date: "Jan 2025", value: 138, label: "Latest Verified" }
       ],
-      doshaAnalysis: "Fasting glucose trajectory shows reduction in systemic Ama and improved Jatharagni digestion."
+      insight: "Fasting blood sugar shows progressive stabilization under Metformin and elimination of late-night meals."
     },
-    triglycerides: {
-      name: "Serum Triglycerides",
-      unit: "mg/dL",
-      targetText: "Optimal Level: < 150 mg/dL",
-      normalThreshold: 150,
+    gastric: {
+      name: "Gastric Motility & Acid Discomfort Index",
+      unit: "/10",
+      targetText: "Optimal Comfort: < 3/10",
+      normalThreshold: 3,
       points: [
-        { date: "Nov 18, 2023", value: 158, label: "Borderline", center: "AIIMS Delhi" },
-        { date: "Aug 22, 2024", value: 215, label: "Dyslipidemia Peak", center: "Fortis Hospital" },
-        { date: "Jan 14, 2025", value: 195, label: "Gradual Improvement", center: "Apollo Diagnostics" },
-        ...(timeline.some(t => t.isNew && t.category === 'Lab Report') ? [
-          { date: "Today (Verified)", value: 192, label: "Verified Lipid Profile", center: "Dr. Lal PathLabs" }
-        ] : [])
+        { date: "Nov 2024", value: 8.5, label: "Severe Amlapitta" },
+        { date: "Dec 2024", value: 6.0, label: "Sukumaram Initiated" },
+        { date: "Jan 2025", value: 3.2, label: "Marked Acid Relief" }
       ],
-      doshaAnalysis: "High triglycerides correspond to Medo-Dhatu Dushti (adipose tissue metabolic stagnancy). Continuous Lekhana herbs advised."
-    },
-    weight: {
-      name: "Body Weight & BMI Tracker",
-      unit: "kg",
-      targetText: "Target Weight: 68 - 70 kg",
-      normalThreshold: 70,
-      points: [
-        { date: "Nov 18, 2023", value: 74, label: "Baseline Check", center: "AIIMS Delhi" },
-        { date: "Aug 22, 2024", value: 78, label: "Peak Weight (BMI 26.4)", center: "Fortis OPD" },
-        { date: "Jan 14, 2025", value: 75, label: "Active Regimen", center: "Apollo Clinic" },
-        ...(timeline.some(t => t.isNew) ? [
-          { date: "Today (Verified)", value: 74, label: "Recent Measurement", center: "OPD Check" }
-        ] : [])
-      ],
-      doshaAnalysis: "Weight reduction mirrors Kapha Shamana and gradual resolution of water retention (Kleda Vriddhi)."
+      insight: "Gastric discomfort reduced from 8.5 to 3.2 following Pantoprazole and Avipattikar Churna with warm cumin buttermilk."
     }
   };
 
-  const activeGraph = graphConfigs[selectedMetric];
+  const activeGraph = graphConfigs[selectedMetric] || graphConfigs.triglycerides;
 
-  // Calculate SVG Coordinates for the Line Graph
   const minVal = Math.min(...activeGraph.points.map(p => p.value)) * 0.85;
   const maxVal = Math.max(...activeGraph.points.map(p => p.value)) * 1.15;
   const range = maxVal - minVal || 1;
@@ -142,14 +133,8 @@ export const TimelineView = ({
   const paddingX = 50;
   const paddingY = 35;
 
-  const getX = (idx, total) => {
-    if (total <= 1) return svgWidth / 2;
-    return paddingX + (idx / (total - 1)) * (svgWidth - paddingX * 2);
-  };
-
-  const getY = (val) => {
-    return svgHeight - paddingY - ((val - minVal) / range) * (svgHeight - paddingY * 2);
-  };
+  const getX = (idx, total) => paddingX + (idx / (total - 1)) * (svgWidth - paddingX * 2);
+  const getY = (val) => svgHeight - paddingY - ((val - minVal) / range) * (svgHeight - paddingY * 2);
 
   const polylinePoints = activeGraph.points
     .map((p, i) => `${getX(i, activeGraph.points.length)},${getY(p.value)}`)
@@ -171,11 +156,11 @@ export const TimelineView = ({
                 <Clock className="w-4 h-4" />
               </span>
               <h1 className="text-xl font-extrabold text-slate-900 tracking-tight font-outfit">
-                Interactive Medical History Timeline & Biomarker Trends
+                Interactive Medical History Timeline & Condition Trends
               </h1>
             </div>
             <p className="text-xs text-slate-500">
-              Chronological stream of all uploaded diagnostic reports, allopathic prescriptions, and classical Ayurvedic clinical interventions indexed under compulsory ABHA ID.
+              Chronological records mapped by condition: Stomach Pain (Udara Shoola) and Chest Pain (Hrid-Shoola).
             </p>
           </div>
 
@@ -209,7 +194,56 @@ export const TimelineView = ({
         </div>
       </div>
 
-      {/* 1. INTERACTIVE MULTI-VALUE BIOMARKER GRAPH */}
+      {/* 1. SIDE-BY-SIDE AI CLINICAL SUMMARY (STOMACH PAIN ON 1 SIDE, CHEST PAIN ON 1 SIDE) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        
+        {/* SIDE 1: STOMACH PAIN AI SUMMARY */}
+        <div className="bg-gradient-to-br from-amber-50/80 via-orange-50/40 to-white rounded-3xl border-2 border-amber-200 p-5 shadow-xs space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
+              <span>🩺</span>
+              Stomach Pain AI Synthesis ({stomachEvents.length} Files)
+            </span>
+            <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-md">
+              Amlapitta & Shoola
+            </span>
+          </div>
+
+          <p className="text-xs text-slate-700 leading-relaxed">
+            AI synthesis across endoscopy reports and gastro prescriptions shows <strong>Pitta-Vataja Udara Shoola</strong> caused by Jatharagni Mandya. Mild antral gastritis is effectively controlled with Pantoprazole 40mg and Sukumaram Kashayam, relieving Kosthagata Ama.
+          </p>
+
+          <div className="pt-2 border-t border-amber-200/60 flex items-center justify-between text-[11px] text-amber-900 font-mono">
+            <span>Scan: Antral Erythema</span>
+            <span>Rx: Sukumaram + Pantoprazole</span>
+          </div>
+        </div>
+
+        {/* SIDE 2: CHEST PAIN AI SUMMARY */}
+        <div className="bg-gradient-to-br from-teal-50/80 via-emerald-50/40 to-white rounded-3xl border-2 border-teal-200 p-5 shadow-xs space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-teal-900 uppercase tracking-wider flex items-center gap-1.5">
+              <span>❤️</span>
+              Chest Pain AI Synthesis ({chestEvents.length} Files)
+            </span>
+            <span className="text-[10px] font-bold text-teal-800 bg-teal-100 px-2 py-0.5 rounded-md">
+              Hrid-Shoola / Lipids
+            </span>
+          </div>
+
+          <p className="text-xs text-slate-700 leading-relaxed">
+            AI synthesis across ECG reports and cardiology prescriptions confirms <strong>Kaphaja-Vataja Hrid-Shoola</strong> linked to elevated Triglycerides (192 mg/dL). Normal ECG rules out acute ischemic injury; Atorvastatin 10mg + Arjuna Ksheerapaka provides safe cardioprotective synergy.
+          </p>
+
+          <div className="pt-2 border-t border-teal-200/60 flex items-center justify-between text-[11px] text-teal-900 font-mono">
+            <span>ECG: Normal Sinus</span>
+            <span>Rx: Atorvastatin + Arjuna</span>
+          </div>
+        </div>
+
+      </div>
+
+      {/* 2. INTERACTIVE BIOMARKER GRAPH */}
       <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs space-y-4">
         
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
@@ -219,23 +253,22 @@ export const TimelineView = ({
                 <LineChart className="w-4 h-4" />
               </span>
               <h3 className="text-sm font-bold text-slate-900">
-                Longitudinal Biomarker Trajectory Graph
+                Condition Biomarker Trajectory Graph
               </h3>
             </div>
             <p className="text-xs text-slate-500">
-              Visual multi-point trend analysis automatically plotted across all uploaded lab records & prescriptions
+              Visual multi-value trend chart representing clinical values over time
             </p>
           </div>
 
-          {/* Metric Selector Tabs */}
           <div className="flex items-center bg-slate-100 p-1 rounded-2xl gap-1">
             <button
-              onClick={() => setSelectedMetric('hba1c')}
+              onClick={() => setSelectedMetric('triglycerides')}
               className={`px-2.5 py-1 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                selectedMetric === 'hba1c' ? 'bg-white text-teal-800 shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+                selectedMetric === 'triglycerides' ? 'bg-white text-teal-800 shadow-2xs' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              HbA1c (%)
+              Triglycerides (Chest)
             </button>
             <button
               onClick={() => setSelectedMetric('glucose')}
@@ -246,37 +279,28 @@ export const TimelineView = ({
               Fasting Sugar
             </button>
             <button
-              onClick={() => setSelectedMetric('triglycerides')}
+              onClick={() => setSelectedMetric('gastric')}
               className={`px-2.5 py-1 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                selectedMetric === 'triglycerides' ? 'bg-white text-teal-800 shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+                selectedMetric === 'gastric' ? 'bg-white text-amber-900 shadow-2xs' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              Triglycerides
-            </button>
-            <button
-              onClick={() => setSelectedMetric('weight')}
-              className={`px-2.5 py-1 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                selectedMetric === 'weight' ? 'bg-white text-teal-800 shadow-2xs' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Weight
+              Acid Motility (Stomach)
             </button>
           </div>
         </div>
 
-        {/* SVG Graph Canvas */}
+        {/* SVG Canvas */}
         <div className="bg-slate-50/70 rounded-2xl p-4 border border-slate-200/80">
           <div className="flex items-center justify-between text-xs text-slate-600 mb-2">
             <span className="font-bold text-slate-800 flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-teal-600"></span>
-              {activeGraph.name} ({activeGraph.unit})
+              {activeGraph.name}
             </span>
             <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
               {activeGraph.targetText}
             </span>
           </div>
 
-          {/* SVG Line Graph */}
           <div className="w-full overflow-x-auto">
             <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-48 select-none">
               <defs>
@@ -286,33 +310,21 @@ export const TimelineView = ({
                 </linearGradient>
               </defs>
 
-              {/* Grid Lines */}
               <line x1={paddingX} y1={paddingY} x2={svgWidth - paddingX} y2={paddingY} stroke="#e2e8f0" strokeDasharray="3 3" />
               <line x1={paddingX} y1={(paddingY + svgHeight - paddingY) / 2} x2={svgWidth - paddingX} y2={(paddingY + svgHeight - paddingY) / 2} stroke="#e2e8f0" strokeDasharray="3 3" />
               <line x1={paddingX} y1={svgHeight - paddingY} x2={svgWidth - paddingX} y2={svgHeight - paddingY} stroke="#cbd5e1" />
 
-              {/* Normal Threshold Line (Green Dotted) */}
               {normalY >= paddingY && normalY <= svgHeight - paddingY && (
                 <g>
-                  <line 
-                    x1={paddingX} 
-                    y1={normalY} 
-                    x2={svgWidth - paddingX} 
-                    y2={normalY} 
-                    stroke="#10b981" 
-                    strokeWidth="1.5" 
-                    strokeDasharray="4 4" 
-                  />
+                  <line x1={paddingX} y1={normalY} x2={svgWidth - paddingX} y2={normalY} stroke="#10b981" strokeWidth="1.5" strokeDasharray="4 4" />
                   <text x={svgWidth - paddingX - 5} y={normalY - 4} textAnchor="end" fontSize="10" fill="#059669" fontWeight="bold">
                     Target {activeGraph.normalThreshold} {activeGraph.unit}
                   </text>
                 </g>
               )}
 
-              {/* Area Under Curve */}
               <polygon points={areaPoints} fill="url(#trendGradient)" />
 
-              {/* Connected Line */}
               <polyline
                 fill="none"
                 stroke="#0d9488"
@@ -322,7 +334,6 @@ export const TimelineView = ({
                 points={polylinePoints}
               />
 
-              {/* Data Points & Callout Labels */}
               {activeGraph.points.map((pt, idx) => {
                 const cx = getX(idx, activeGraph.points.length);
                 const cy = getY(pt.value);
@@ -330,39 +341,11 @@ export const TimelineView = ({
 
                 return (
                   <g key={idx}>
-                    {/* Circle Pin */}
-                    <circle
-                      cx={cx}
-                      cy={cy}
-                      r={isLatest ? "6.5" : "5"}
-                      fill={isLatest ? "#059669" : "#0d9488"}
-                      stroke="#ffffff"
-                      strokeWidth="2.5"
-                      className="transition-all hover:scale-125"
-                    />
-
-                    {/* Value Badge Text above point */}
-                    <text
-                      x={cx}
-                      y={cy - 10}
-                      textAnchor="middle"
-                      fontSize="11"
-                      fontWeight="bold"
-                      fill={isLatest ? "#047857" : "#0f766e"}
-                      fontFamily="monospace"
-                    >
+                    <circle cx={cx} cy={cy} r={isLatest ? "6.5" : "5"} fill={isLatest ? "#059669" : "#0d9488"} stroke="#ffffff" strokeWidth="2.5" />
+                    <text x={cx} y={cy - 10} textAnchor="middle" fontSize="11" fontWeight="bold" fill={isLatest ? "#047857" : "#0f766e"} fontFamily="monospace">
                       {pt.value} {activeGraph.unit}
                     </text>
-
-                    {/* Date Label below baseline */}
-                    <text
-                      x={cx}
-                      y={svgHeight - paddingY + 16}
-                      textAnchor="middle"
-                      fontSize="10"
-                      fontWeight="600"
-                      fill="#64748b"
-                    >
+                    <text x={cx} y={svgHeight - paddingY + 16} textAnchor="middle" fontSize="10" fontWeight="600" fill="#64748b">
                       {pt.date}
                     </text>
                   </g>
@@ -371,87 +354,18 @@ export const TimelineView = ({
             </svg>
           </div>
 
-          {/* Clinical Interpretation Box */}
           <div className="mt-3 p-3 rounded-xl bg-teal-50/50 border border-teal-200/80 text-xs text-slate-700 flex items-start gap-2">
             <Sparkles className="w-4 h-4 text-teal-600 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold text-teal-900">AI Longitudinal Trajectory Insight:</p>
-              <p className="text-slate-600 mt-0.5">{activeGraph.doshaAnalysis}</p>
+              <p className="font-bold text-teal-900">AI Trajectory Insight:</p>
+              <p className="text-slate-600 mt-0.5">{activeGraph.insight}</p>
             </div>
           </div>
-
         </div>
 
       </div>
 
-      {/* 2. AI MULTI-RECORD COMPARATIVE SYNTHESIS (When >= 2 same-type records exist) */}
-      <div className="bg-gradient-to-r from-emerald-50/70 via-teal-50/50 to-white rounded-3xl border border-emerald-300 p-6 shadow-xs space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-emerald-600 text-white shadow-xs">
-              <Sparkles className="w-4 h-4" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <span>AI Multi-Record Longitudinal Synthesis</span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold border border-emerald-300">
-                  {labRecords.length} Lab Reports • {rxRecords.length} Prescriptions Synthesized
-                </span>
-              </h3>
-              <p className="text-xs text-slate-500">
-                Cross-document intelligence comparing all historical and newly uploaded records under ABHA ID
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
-          
-          {/* Card A: Multi-Lab Report Comparison */}
-          <div className="bg-white rounded-2xl p-4 border border-emerald-200/80 shadow-2xs space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
-                <Activity className="w-3.5 h-3.5 text-emerald-600" />
-                Diagnostic Lab Comparison ({labRecords.length} Reports)
-              </span>
-              <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
-                Trend: Improving
-              </span>
-            </div>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Comparison across reports from <strong>Nov 2023 to Today</strong>: Patient's HbA1c trajectory peaked at 8.4% upon T2DM conversion, and has stabilized to <strong>7.8% (and 7.6% on recent scan)</strong> following classical Ayurvedic Agni-Deepana herbs and dietary carbohydrate control.
-            </p>
-            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-mono">
-              <span>Insulin: 18.4 uIU/mL (Upper Normal)</span>
-              <span>Triglycerides: 192 mg/dL</span>
-            </div>
-          </div>
-
-          {/* Card B: Multi-Prescription Drug-Herb Synergy */}
-          <div className="bg-white rounded-2xl p-4 border border-teal-200/80 shadow-2xs space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-teal-900 flex items-center gap-1.5">
-                <Pill className="w-3.5 h-3.5 text-teal-600" />
-                Therapeutic Formulations Synergy ({rxRecords.length + ayurRecords.length} Records)
-              </span>
-              <span className="text-[10px] font-semibold text-teal-700 bg-teal-50 px-2 py-0.5 rounded">
-                Compatibility: Safe
-              </span>
-            </div>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Allopathic regimen (Metformin 500mg BD + Atorvastatin 10mg) is co-administered with Ayurvedic Deepana-Pachana (Trikatu & Musta-Khadira). <strong>No negative pharmacokinetic herb-drug interactions detected.</strong>
-            </p>
-            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-mono">
-              <span>Metformin: Stable Dosage</span>
-              <span>Anupana: Ushnodaka (Warm Water)</span>
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-
-      {/* 3. CHRONOLOGICAL TIMELINE STREAM */}
+      {/* 3. CHRONOLOGICAL STREAM */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
@@ -464,18 +378,17 @@ export const TimelineView = ({
         <div className="relative pl-6 sm:pl-8 border-l-2 border-emerald-200 space-y-6 ml-4 sm:ml-6">
           {filteredTimeline.map((item) => {
             const isExpanded = expandedItems[item.id];
+            const isStomach = item.condition === 'stomach_pain' || item.title.toLowerCase().includes('stomach') || item.title.toLowerCase().includes('endoscopy') || item.title.toLowerCase().includes('gastro');
 
             return (
               <div key={item.id} className="relative group">
                 
-                {/* Timeline Bullet Node */}
                 <div className={`absolute -left-[31px] sm:-left-[39px] top-1.5 w-6 h-6 rounded-full bg-white border-4 shadow-2xs flex items-center justify-center transition-transform ${
-                  item.isNew ? 'border-emerald-600 ring-4 ring-emerald-200 animate-pulse' : 'border-emerald-500'
+                  isStomach ? 'border-amber-500' : 'border-teal-500'
                 }`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${item.isNew ? 'bg-emerald-700' : 'bg-emerald-600'}`}></span>
+                  <span className={`w-1.5 h-1.5 rounded-full ${isStomach ? 'bg-amber-600' : 'bg-teal-600'}`}></span>
                 </div>
 
-                {/* Event Card */}
                 <div className={`bg-white rounded-3xl border p-5 shadow-xs transition-all ${
                   item.isNew 
                     ? 'border-emerald-400 ring-2 ring-emerald-200/60 bg-emerald-50/10' 
@@ -487,13 +400,18 @@ export const TimelineView = ({
                       <span className="text-xs font-mono font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
                         {item.date}
                       </span>
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-md ${
+                        isStomach ? 'bg-amber-50 text-amber-900 border border-amber-200' : 'bg-teal-50 text-teal-900 border border-teal-200'
+                      }`}>
+                        {isStomach ? '🩺 Stomach Pain' : '❤️ Chest Pain'}
+                      </span>
                       <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
                         {item.category}
                       </span>
                       {item.isNew && (
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-600 text-white shadow-2xs flex items-center gap-1">
                           <CheckCircle2 className="w-3 h-3" />
-                          ★ Newly Uploaded via AI OCR
+                          ★ Newly Uploaded
                         </span>
                       )}
                     </div>
@@ -514,27 +432,24 @@ export const TimelineView = ({
                     {item.summary}
                   </p>
 
-                  {/* Key Values Tag Pills */}
                   {item.keyValues && item.keyValues.length > 0 && (
                     <div className="flex flex-wrap items-center gap-1.5 mt-3">
                       {item.keyValues.map((val, idx) => (
-                        <span 
-                          key={idx} 
-                          className="text-[11px] font-mono font-medium px-2 py-0.5 bg-slate-50 border border-slate-200 rounded-md text-slate-700"
-                        >
+                        <span key={idx} className="text-[11px] font-mono font-medium px-2 py-0.5 bg-slate-50 border border-slate-200 rounded-md text-slate-700">
                           {val}
                         </span>
                       ))}
                     </div>
                   )}
 
-                  {/* Expandable Deep Dive */}
                   {isExpanded && (
                     <div className="mt-4 pt-4 border-t border-slate-100 space-y-3 animate-fadeIn">
                       <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/70 text-xs text-slate-600">
-                        <p className="font-semibold text-slate-800 mb-1">Longitudinal Clinical Assessment Note:</p>
+                        <p className="font-semibold text-slate-800 mb-1">AI Clinical Assessment Note:</p>
                         <p>
-                          Event corroborated with patient's Agni state at time of recording. Correlates with Classical Ayurvedic Dosha-Dushya pathology and Medovaha Srotas metabolic changes.
+                          {isStomach 
+                            ? "Correlates with functional dyspepsia and delayed gastric emptying. Demonstrates progressive recovery of Jatharagni with Sukumaram Kashayam."
+                            : "Correlates with atherogenic dyslipidemia and vascular channel congestion. Arjuna Ksheerapaka actively supports myocardial tone."}
                         </p>
                       </div>
 

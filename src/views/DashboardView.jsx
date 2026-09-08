@@ -12,12 +12,14 @@ import {
   CheckCircle2, 
   AlertCircle,
   FileCheck,
-  Flame,
   ShieldCheck,
   Calendar,
-  Utensils
+  Utensils,
+  Pill,
+  Heart,
+  PlusCircle,
+  ArrowRight
 } from 'lucide-react';
-import { DoshaMeter } from '../components/DoshaMeter';
 import { MissingDocBanner } from '../components/NotificationToast';
 
 export const DashboardView = ({ 
@@ -28,7 +30,7 @@ export const DashboardView = ({
   onNavigate, 
   onOpenAbha,
   aiSummary,
-  oldRecords,
+  oldRecords = [],
   foodIntake,
   onUpdateFoodIntake
 }) => {
@@ -58,6 +60,24 @@ export const DashboardView = ({
   const patientInitials = patient.name 
     ? patient.name.trim().split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() 
     : 'PT';
+
+  // Separate records strictly by the 2 conditions: Stomach Pain vs Chest Pain
+  const stomachRecords = oldRecords.filter(r => 
+    r.condition === 'stomach_pain' || 
+    r.title.toLowerCase().includes('stomach') || 
+    r.title.toLowerCase().includes('endoscopy') || 
+    r.title.toLowerCase().includes('gastro') ||
+    r.fileName.toLowerCase().includes('stomach')
+  );
+
+  const chestRecords = oldRecords.filter(r => 
+    r.condition === 'chest_pain' || 
+    r.title.toLowerCase().includes('chest') || 
+    r.title.toLowerCase().includes('cardio') || 
+    r.title.toLowerCase().includes('ecg') || 
+    r.title.toLowerCase().includes('lipid') ||
+    r.fileName.toLowerCase().includes('chest')
+  );
 
   return (
     <div className="space-y-6 pb-12 animate-fadeIn">
@@ -93,9 +113,9 @@ export const DashboardView = ({
                   Prakriti: {patient.prakriti}
                 </span>
                 {patient.isAbhaLinked && (
-                  <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-teal-100 text-teal-800 border border-teal-300 flex items-center gap-1">
-                    <ShieldCheck className="w-3 h-3" />
-                    ABHA Linked
+                  <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-teal-100 text-teal-800 border border-teal-300 flex items-center gap-1 font-mono">
+                    <ShieldCheck className="w-3 h-3 text-teal-700" />
+                    ABHA: {patient.abhaId}
                   </span>
                 )}
               </div>
@@ -105,29 +125,29 @@ export const DashboardView = ({
             </div>
           </div>
 
-          {/* Quick Vitals Summary Pill Grid */}
+          {/* Quick Vitals Summary */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-3 rounded-2xl border border-slate-200/80 shadow-2xs">
             <div className="px-3 py-1.5 border-r border-slate-100">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Blood Sugar (F)</p>
-              <p className="text-sm font-bold text-rose-600 font-mono">{patient.vitals.bloodSugarFasting}</p>
+              <p className="text-sm font-bold text-rose-600 font-mono">{patient.vitals?.bloodSugarFasting || '138 mg/dL'}</p>
               <p className="text-[10px] text-rose-500">Elevated</p>
             </div>
 
             <div className="px-3 py-1.5 border-r border-slate-100">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Blood Pressure</p>
-              <p className="text-sm font-bold text-slate-800 font-mono">{patient.vitals.bp}</p>
-              <p className="text-[10px] text-slate-500">Pre-HTN</p>
+              <p className="text-sm font-bold text-slate-800 font-mono">{patient.vitals?.bp || '128/82 mmHg'}</p>
+              <p className="text-[10px] text-slate-500">Normal</p>
             </div>
 
             <div className="px-3 py-1.5 border-r border-slate-100">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Heart Rate</p>
-              <p className="text-sm font-bold text-slate-800 font-mono">{patient.vitals.pulse}</p>
-              <p className="text-[10px] text-emerald-600">Normal</p>
+              <p className="text-sm font-bold text-slate-800 font-mono">{patient.vitals?.pulse || '74 bpm'}</p>
+              <p className="text-[10px] text-emerald-600">Stable</p>
             </div>
 
             <div className="px-3 py-1.5">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">BMI / Weight</p>
-              <p className="text-sm font-bold text-amber-700 font-mono">26.4 ({patient.vitals.weight})</p>
+              <p className="text-sm font-bold text-amber-700 font-mono">26.4 ({patient.vitals?.weight || '74 kg'})</p>
               <p className="text-[10px] text-amber-600">Overweight</p>
             </div>
           </div>
@@ -135,122 +155,263 @@ export const DashboardView = ({
         </div>
       </div>
 
-      {/* 4 PRIMARY ACTION TILES */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-            <Activity className="w-4 h-4 text-emerald-600" />
-            Core Clinical Actions
-          </h2>
-          <span className="text-xs text-slate-500">Select any workflow to test</span>
+      {/* CONDITION-WISE CLINICAL WORKSPACE: STOMACH PAIN (1 SIDE) & CHEST PAIN (1 SIDE) */}
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h2 className="text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+              <Activity className="w-5 h-5 text-emerald-600" />
+              Condition-Wise Medical Intelligence & AI Summarization
+            </h2>
+            <p className="text-xs text-slate-500">
+              AI organizes reports and prescriptions by respective health condition: Stomach Pain on one side and Chest Pain on the other side.
+            </p>
+          </div>
+
+          <button
+            onClick={() => onNavigate('upload-records')}
+            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs inline-flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
+          >
+            <UploadCloud className="w-4 h-4" />
+            Upload New Condition Report
+          </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* 2-SIDE DUAL COLUMN LAYOUT */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
-          {/* Card 1: Start New Case Taking */}
-          <div 
-            onClick={() => onNavigate('case-taking')}
-            className="group bg-white rounded-3xl border border-slate-200/90 p-5 shadow-xs hover:shadow-md hover:border-emerald-300 transition-all cursor-pointer flex flex-col justify-between"
-          >
-            <div>
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center mb-4 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                <FileText className="w-6 h-6" />
-              </div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100/70 px-2 py-0.5 rounded-md">
-                Ayurvedic Pariksha
-              </span>
-              <h3 className="text-base font-bold text-slate-900 mt-2 group-hover:text-emerald-700 transition-colors">
-                Start New Case Intake
-              </h3>
-              <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
-                Step-by-step classical intake: Chief Complaint, Dashavidha Pariksha, and Ahara-Vihara assessment.
-              </p>
-            </div>
+          {/* ========================================================================= */}
+          {/* SIDE 1 (LEFT): STOMACH PAIN (UDARA SHOOLA) RECORDS & AI CLINICAL SUMMARY */}
+          {/* ========================================================================= */}
+          <div className="bg-white rounded-3xl border-2 border-amber-200/90 p-6 shadow-xs space-y-5 flex flex-col justify-between hover:border-amber-300 transition-all">
             
-            <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-emerald-700 group-hover:text-emerald-800">
-              <span>Launch Case Wizard</span>
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            <div className="space-y-4">
+              {/* Header */}
+              <div className="flex items-start justify-between gap-3 pb-3 border-b border-amber-100">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-lg shadow-2xs">
+                    🩺
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 bg-amber-100 px-2 py-0.5 rounded-md">
+                      Condition 1 • Gastrointestinal
+                    </span>
+                    <h3 className="text-base font-black text-slate-900 mt-0.5">
+                      Stomach Pain History (Udara Shoola & Amlapitta)
+                    </h3>
+                  </div>
+                </div>
+
+                <span className="text-xs font-bold text-amber-900 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-xl">
+                  {stomachRecords.length} Records
+                </span>
+              </div>
+
+              {/* AI CLINICAL SUMMARY FOR STOMACH PAIN */}
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-50/70 via-orange-50/40 to-white border border-amber-200/80 space-y-2.5 shadow-2xs">
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 text-xs font-bold text-amber-900 uppercase tracking-wider">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                    AI Summary for Stomach Pain
+                  </span>
+                  <span className="text-[10px] font-semibold text-amber-700 bg-white px-2 py-0.5 rounded border border-amber-200">
+                    Pitta-Vataja Shoola
+                  </span>
+                </div>
+
+                <div className="space-y-1 text-xs text-slate-700">
+                  <p>
+                    <strong className="text-slate-900">Diagnosis:</strong> Functional Dyspepsia & Amlapitta with Pitta-Vataja Udara Shoola.
+                  </p>
+                  <p>
+                    <strong className="text-slate-900">Etiology & Root Cause:</strong> Jatharagni Mandya (sluggish digestive fire) and delayed gastric emptying with mucosal hyperacidity from irregular meal timings and cold drinks.
+                  </p>
+                  <p className="text-slate-600 leading-relaxed pt-1">
+                    <strong className="text-slate-800">AI Cross-Record Synthesis:</strong> Upper GI endoscopy confirmed antral erythema without peptic ulceration. Contemporary Pantoprazole 40mg is combined with Sukumaram Kashayam and Avipattikar Churna, successfully neutralizing gastric acid and clearing Kosthagata Ama.
+                  </p>
+                </div>
+
+                <div className="pt-2 border-t border-amber-200/60 flex items-center justify-between text-[11px] text-amber-900 font-medium">
+                  <span>Ahara: Cumin Takra, avoid curd</span>
+                  <span>Agni: Deepana-Pachana Active</span>
+                </div>
+              </div>
+
+              {/* Respective Stomach Pain Reports & Prescriptions */}
+              <div className="space-y-2.5">
+                <p className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center justify-between">
+                  <span>Stomach Pain Reports & Prescriptions:</span>
+                  <span className="text-[10px] text-slate-400 font-normal">ABHA Stamped</span>
+                </p>
+
+                {stomachRecords.map((rec) => (
+                  <div
+                    key={rec.id}
+                    onClick={() => onNavigate('upload-records')}
+                    className="p-3.5 rounded-2xl border border-slate-200 hover:border-amber-300 hover:bg-amber-50/20 transition-all cursor-pointer bg-slate-50/60"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-start gap-2.5 min-w-0">
+                        <div className="p-2 rounded-xl bg-white border border-slate-200 text-amber-700 mt-0.5 flex-shrink-0">
+                          {rec.type === 'Prescription' ? <Pill className="w-4 h-4" /> : <FileText className="w-4 h-4" />}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-slate-900 truncate">{rec.title}</p>
+                          <p className="text-[11px] text-slate-500">{rec.institution}</p>
+                          
+                          {/* Snippet Values */}
+                          <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                            {rec.extractedData?.biomarkers?.slice(0, 2).map((b, i) => (
+                              <span key={i} className="text-[10px] font-mono px-1.5 py-0.5 bg-white border border-amber-200 text-amber-900 rounded">
+                                {b.name}: {b.value}
+                              </span>
+                            ))}
+                            {rec.extractedData?.medications?.slice(0, 2).map((m, i) => (
+                              <span key={i} className="text-[10px] font-mono px-1.5 py-0.5 bg-white border border-amber-200 text-amber-900 rounded">
+                                {m.name} ({m.dose})
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-white border border-slate-200 text-slate-600 flex-shrink-0">
+                        {rec.type}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
+
+            {/* Side 1 Action */}
+            <div className="pt-4 border-t border-amber-100 flex items-center justify-between">
+              <span className="text-[11px] text-slate-500 font-mono">Condition ID: COND-GASTRO-01</span>
+              <button
+                onClick={() => onNavigate('upload-records')}
+                className="text-xs font-bold text-amber-800 hover:text-amber-900 hover:underline flex items-center gap-1 cursor-pointer"
+              >
+                + Add Stomach Pain File <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
           </div>
 
-          {/* Card 2: Upload Medical Records (AI OCR) */}
-          <div 
-            onClick={() => onNavigate('upload-records')}
-            className="group bg-white rounded-3xl border border-slate-200/90 p-5 shadow-xs hover:shadow-md hover:border-teal-300 transition-all cursor-pointer flex flex-col justify-between"
-          >
-            <div>
-              <div className="w-12 h-12 rounded-2xl bg-teal-50 text-teal-700 border border-teal-200 flex items-center justify-center mb-4 group-hover:bg-teal-600 group-hover:text-white transition-colors">
-                <UploadCloud className="w-6 h-6" />
+          {/* ========================================================================= */}
+          {/* SIDE 2 (RIGHT): CHEST PAIN (HRID-SHOOLA) RECORDS & AI CLINICAL SUMMARY */}
+          {/* ========================================================================= */}
+          <div className="bg-white rounded-3xl border-2 border-teal-200/90 p-6 shadow-xs space-y-5 flex flex-col justify-between hover:border-teal-300 transition-all">
+            
+            <div className="space-y-4">
+              {/* Header */}
+              <div className="flex items-start justify-between gap-3 pb-3 border-b border-teal-100">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-2xl bg-teal-100 text-teal-800 flex items-center justify-center font-bold text-lg shadow-2xs">
+                    ❤️
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-teal-800 bg-teal-100 px-2 py-0.5 rounded-md">
+                      Condition 2 • Cardiovascular & Metabolic
+                    </span>
+                    <h3 className="text-base font-black text-slate-900 mt-0.5">
+                      Chest Pain History (Hrid-Shoola & Dyslipidemia)
+                    </h3>
+                  </div>
+                </div>
+
+                <span className="text-xs font-bold text-teal-900 bg-teal-50 border border-teal-200 px-2.5 py-1 rounded-xl">
+                  {chestRecords.length} Records
+                </span>
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-teal-800 bg-teal-100/70 px-2 py-0.5 rounded-md">
-                Smart OCR & NLP
-              </span>
-              <h3 className="text-base font-bold text-slate-900 mt-2 group-hover:text-teal-700 transition-colors">
-                Upload Medical Records
-              </h3>
-              <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
-                Scan lab reports & prescriptions. AI extracts biomarkers and correlates with Ayurvedic doshas.
-              </p>
-            </div>
 
-            <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-teal-700 group-hover:text-teal-800">
-              <span>Scan & Extract Records</span>
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
+              {/* AI CLINICAL SUMMARY FOR CHEST PAIN */}
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-teal-50/70 via-emerald-50/40 to-white border border-teal-200/80 space-y-2.5 shadow-2xs">
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 text-xs font-bold text-teal-900 uppercase tracking-wider">
+                    <Sparkles className="w-3.5 h-3.5 text-teal-600" />
+                    AI Summary for Chest Pain
+                  </span>
+                  <span className="text-[10px] font-semibold text-teal-700 bg-white px-2 py-0.5 rounded border border-teal-200">
+                    Hridya Srotorodha
+                  </span>
+                </div>
 
-          {/* Card 3: Link ABHA Health Account */}
-          <div 
-            onClick={onOpenAbha}
-            className="group bg-white rounded-3xl border border-slate-200/90 p-5 shadow-xs hover:shadow-md hover:border-sky-300 transition-all cursor-pointer flex flex-col justify-between"
-          >
-            <div>
-              <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-700 border border-sky-200 flex items-center justify-center mb-4 group-hover:bg-sky-600 group-hover:text-white transition-colors">
-                <CreditCard className="w-6 h-6" />
+                <div className="space-y-1 text-xs text-slate-700">
+                  <p>
+                    <strong className="text-slate-900">Diagnosis:</strong> Kaphaja-Vataja Hrid-Shoola with Medovaha Srotorodha.
+                  </p>
+                  <p>
+                    <strong className="text-slate-900">Etiology & Root Cause:</strong> Atherogenic dyslipidemia (Triglycerides 192 mg/dL) causing arterial micro-channel congestion. 12-lead ECG confirms normal sinus rhythm without acute ischemic damage.
+                  </p>
+                  <p className="text-slate-600 leading-relaxed pt-1">
+                    <strong className="text-slate-800">AI Cross-Record Synthesis:</strong> Cardiology protocol (Atorvastatin 10mg + Metformin 500mg) is co-prescribed with classical cardioprotective Arjuna Ksheerapaka. No adverse herb-drug interactions found; myocardial tone is well maintained.
+                  </p>
+                </div>
+
+                <div className="pt-2 border-t border-teal-200/60 flex items-center justify-between text-[11px] text-teal-900 font-medium">
+                  <span>Vihara: 30-min brisk walk daily</span>
+                  <span>Herb: Arjuna Ksheerapaka BD</span>
+                </div>
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-sky-800 bg-sky-100/70 px-2 py-0.5 rounded-md">
-                Govt. ABDM Interop
-              </span>
-              <h3 className="text-base font-bold text-slate-900 mt-2 group-hover:text-sky-700 transition-colors">
-                {patient.isAbhaLinked ? 'View ABHA Digital Card' : 'Link ABHA Account'}
-              </h3>
-              <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
-                {patient.isAbhaLinked 
-                  ? 'ABHA ID linked. View or print official card & sync ABDM health records.'
-                  : 'Enter 14-digit ABHA ID, verify via simulated OTP, and generate digital health card.'}
-              </p>
-            </div>
 
-            <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-sky-700 group-hover:text-sky-800">
-              <span>Open Digital Card & QR</span>
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
+              {/* Respective Chest Pain Reports & Prescriptions */}
+              <div className="space-y-2.5">
+                <p className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center justify-between">
+                  <span>Chest Pain Reports & Prescriptions:</span>
+                  <span className="text-[10px] text-slate-400 font-normal">ABHA Stamped</span>
+                </p>
 
-          {/* Card 4: Interactive Medical Timeline */}
-          <div 
-            onClick={() => onNavigate('timeline')}
-            className="group bg-white rounded-3xl border border-slate-200/90 p-5 shadow-xs hover:shadow-md hover:border-emerald-300 transition-all cursor-pointer flex flex-col justify-between"
-          >
-            <div>
-              <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 border border-amber-200 flex items-center justify-center mb-4 group-hover:bg-amber-600 group-hover:text-white transition-colors">
-                <Clock className="w-6 h-6" />
+                {chestRecords.map((rec) => (
+                  <div
+                    key={rec.id}
+                    onClick={() => onNavigate('upload-records')}
+                    className="p-3.5 rounded-2xl border border-slate-200 hover:border-teal-300 hover:bg-teal-50/20 transition-all cursor-pointer bg-slate-50/60"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-start gap-2.5 min-w-0">
+                        <div className="p-2 rounded-xl bg-white border border-slate-200 text-teal-700 mt-0.5 flex-shrink-0">
+                          {rec.type === 'Prescription' ? <Pill className="w-4 h-4" /> : <FileText className="w-4 h-4" />}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-slate-900 truncate">{rec.title}</p>
+                          <p className="text-[11px] text-slate-500">{rec.institution}</p>
+                          
+                          {/* Snippet Values */}
+                          <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                            {rec.extractedData?.biomarkers?.slice(0, 2).map((b, i) => (
+                              <span key={i} className="text-[10px] font-mono px-1.5 py-0.5 bg-white border border-teal-200 text-teal-900 rounded">
+                                {b.name}: {b.value}
+                              </span>
+                            ))}
+                            {rec.extractedData?.medications?.slice(0, 2).map((m, i) => (
+                              <span key={i} className="text-[10px] font-mono px-1.5 py-0.5 bg-white border border-teal-200 text-teal-900 rounded">
+                                {m.name} ({m.dose})
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-white border border-slate-200 text-slate-600 flex-shrink-0">
+                        {rec.type}
+                      </span>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 bg-amber-100/70 px-2 py-0.5 rounded-md">
-                Chronological History
-              </span>
-              <h3 className="text-base font-bold text-slate-900 mt-2 group-hover:text-amber-700 transition-colors">
-                Medical History Timeline
-              </h3>
-              <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
-                Browse chronological medical milestones, lab trends, and previous Panchakarma records.
-              </p>
             </div>
 
-            <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-amber-700 group-hover:text-amber-800">
-              <span>Explore Timeline</span>
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            {/* Side 2 Action */}
+            <div className="pt-4 border-t border-teal-100 flex items-center justify-between">
+              <span className="text-[11px] text-slate-500 font-mono">Condition ID: COND-CARDIO-02</span>
+              <button
+                onClick={() => onNavigate('upload-records')}
+                className="text-xs font-bold text-teal-800 hover:text-teal-900 hover:underline flex items-center gap-1 cursor-pointer"
+              >
+                + Add Chest Pain File <ChevronRight className="w-3.5 h-3.5" />
+              </button>
             </div>
+
           </div>
 
         </div>
@@ -258,248 +419,118 @@ export const DashboardView = ({
 
       {/* DEDICATED FOOD INTAKE & AHARA LOG BOX (FEEDS AI SUMMARIZATION) */}
       <div className="bg-white rounded-3xl border border-emerald-200/90 p-5 sm:p-6 shadow-xs relative overflow-hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
-          <div className="flex items-start sm:items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center flex-shrink-0">
-              <Utensils className="w-5 h-5" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center flex-shrink-0">
+              <Utensils className="w-4 h-4" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-slate-900">
-                  Daily Food Intake & Ahara Log
-                </h2>
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                  <Sparkles className="w-3 h-3 text-emerald-600" />
-                  AI Analyzed
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Record your daily meals to let AI detect dietary triggers (Nidana), Dosha imbalance & formulate Pathya-Apathya
+              <h3 className="text-sm font-bold text-slate-900">
+                Daily Food Intake & Ahara Log
+              </h3>
+              <p className="text-[11px] text-slate-500">
+                Dietary intake analyzed in real-time by AI for both Stomach Pain (acid trigger) and Chest Pain (lipid trigger)
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 self-end sm:self-auto">
-            {!isEditingFood ? (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setIsEditingFood(true)}
-                  className="px-3.5 py-2 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition-colors"
-                >
-                  Edit Food Intake
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleSaveFood();
-                    onNavigate('ai-summary');
-                  }}
-                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-colors shadow-xs"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  View AI Analysis
-                </button>
-              </>
-            ) : (
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsEditingFood(false)}
-                  className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-800"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveFood}
-                  className="px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-colors shadow-xs flex items-center gap-1.5"
-                >
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  Save & Update AI
-                </button>
-              </div>
-            )}
-          </div>
+          <button
+            onClick={() => setIsEditingFood(!isEditingFood)}
+            className="px-3 py-1.5 rounded-xl text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors self-start sm:self-auto cursor-pointer"
+          >
+            {isEditingFood ? 'Close Log' : 'Edit Meals'}
+          </button>
         </div>
 
-        {/* Display Mode: Micro-Cards */}
         {!isEditingFood ? (
+          /* Static Display */
           <div className="pt-4 space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-              
-              {/* Breakfast */}
-              <div className="p-3 rounded-2xl bg-slate-50/80 border border-slate-200/80 hover:bg-emerald-50/30 transition-colors">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 block mb-1">
-                  🥣 Breakfast (Morning)
-                </span>
-                <p className="text-xs font-medium text-slate-800 leading-snug line-clamp-2">
-                  {foodForm.breakfast || "Not recorded"}
-                </p>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">🥣 Breakfast</p>
+                <p className="text-xs font-semibold text-slate-800 mt-1 line-clamp-2">{foodForm.breakfast || 'None'}</p>
               </div>
 
-              {/* Lunch */}
-              <div className="p-3 rounded-2xl bg-slate-50/80 border border-slate-200/80 hover:bg-emerald-50/30 transition-colors">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 block mb-1">
-                  🍛 Lunch (Madhyahna)
-                </span>
-                <p className="text-xs font-medium text-slate-800 leading-snug line-clamp-2">
-                  {foodForm.lunch || "Not recorded"}
-                </p>
+              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">🍛 Lunch</p>
+                <p className="text-xs font-semibold text-slate-800 mt-1 line-clamp-2">{foodForm.lunch || 'None'}</p>
               </div>
 
-              {/* Evening Snacks */}
-              <div className="p-3 rounded-2xl bg-slate-50/80 border border-slate-200/80 hover:bg-emerald-50/30 transition-colors">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 block mb-1">
-                  ☕ Evening Snacks
-                </span>
-                <p className="text-xs font-medium text-slate-800 leading-snug line-clamp-2">
-                  {foodForm.eveningSnacks || "Not recorded"}
-                </p>
+              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">☕ Evening Snacks</p>
+                <p className="text-xs font-semibold text-slate-800 mt-1 line-clamp-2">{foodForm.eveningSnacks || 'None'}</p>
               </div>
 
-              {/* Dinner */}
-              <div className="p-3 rounded-2xl bg-slate-50/80 border border-slate-200/80 hover:bg-emerald-50/30 transition-colors">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 block mb-1">
-                  🍽️ Dinner (Ratri Ahara)
-                </span>
-                <p className="text-xs font-medium text-slate-800 leading-snug line-clamp-2">
-                  {foodForm.dinner || "Not recorded"}
-                </p>
+              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">🍲 Dinner</p>
+                <p className="text-xs font-semibold text-slate-800 mt-1 line-clamp-2">{foodForm.dinner || 'None'}</p>
               </div>
 
-              {/* Fluids */}
-              <div className="p-3 rounded-2xl bg-slate-50/80 border border-slate-200/80 hover:bg-emerald-50/30 transition-colors">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-teal-700 block mb-1">
-                  💧 Fluids & Water
-                </span>
-                <p className="text-xs font-medium text-slate-800 leading-snug line-clamp-2">
-                  {foodForm.fluids || "Not recorded"}
-                </p>
+              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 col-span-2 sm:col-span-1">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">💧 Fluids</p>
+                <p className="text-xs font-semibold text-slate-800 mt-1 line-clamp-2">{foodForm.fluids || 'Standard water'}</p>
               </div>
-
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 text-[11px] text-slate-500 bg-emerald-50/40 p-2.5 rounded-xl border border-emerald-100">
-              <span className="flex items-center gap-1.5 text-emerald-800 font-medium">
-                <Sparkles className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
-                AI Analysis: {aiSummary.foodIntakeAnalysis ? aiSummary.foodIntakeAnalysis.primaryTriggers.slice(0, 2).join(' • ') : 'Ready for analysis'}
-              </span>
-              <button 
-                onClick={() => onNavigate('ai-summary')}
-                className="text-xs font-bold text-emerald-700 hover:underline flex items-center gap-1 self-end sm:self-auto"
-              >
-                Inspect Full Dietary Report →
-              </button>
             </div>
           </div>
         ) : (
           /* Editing Form */
           <form onSubmit={handleSaveFood} className="pt-4 space-y-4">
-            <div className="flex flex-wrap items-center gap-2 pb-2">
-              <span className="text-xs font-bold text-slate-600">Quick Presets:</span>
-              <button
-                type="button"
-                onClick={() => setFoodForm({
-                  breakfast: "Idli with coconut chutney, sweet milk tea with 2 tsp sugar",
-                  lunch: "White polished rice, thick curd (dahi), aloo fry, dal with ghee",
-                  eveningSnacks: "Deep fried samosa, 3 biscuits, sweet milk tea",
-                  dinner: "3 Wheat rotis, paneer butter masala, late-night sweetened cold milk",
-                  fluids: "Refrigerated chilled water after meals, 3 sugary teas",
-                  notes: "Frequent heavy curd and chilled water with meals."
-                })}
-                className="px-2.5 py-1 text-[11px] font-medium bg-amber-50 text-amber-800 border border-amber-200 rounded-lg hover:bg-amber-100"
-              >
-                High-Kapha / Curd Diet (Triggers)
-              </button>
-              <button
-                type="button"
-                onClick={() => setFoodForm({
-                  breakfast: "Yava (Barley) porridge with roasted cumin and warm water",
-                  lunch: "Mudga (Moong dal) soup, roasted vegetables (bitter gourd), spiced takra",
-                  eveningSnacks: "Roasted makhana with pinch of rock salt and ginger tea",
-                  dinner: "1 Light barley roti with steamed ridge gourd, eaten before 7:30 PM",
-                  fluids: "Boiled warm water (Ushnodaka) with dry ginger, no cold fluids",
-                  notes: "Strict Sattvic Pathya regimen pacifying Kapha and igniting Agni."
-                })}
-                className="px-2.5 py-1 text-[11px] font-medium bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-lg hover:bg-emerald-100"
-              >
-                Sattvic Pathya Diet (Healing)
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  🥣 Breakfast (Morning)
-                </label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">🥣 Breakfast</label>
                 <input
                   type="text"
                   value={foodForm.breakfast}
                   onChange={(e) => setFoodForm({ ...foodForm, breakfast: e.target.value })}
-                  placeholder="e.g. Idli, sambar, coffee with sugar"
-                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  🍛 Lunch (Madhyahna)
-                </label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">🍛 Lunch</label>
                 <input
                   type="text"
                   value={foodForm.lunch}
                   onChange={(e) => setFoodForm({ ...foodForm, lunch: e.target.value })}
-                  placeholder="e.g. Rice, curd, dal, sabzi, ghee"
-                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  ☕ Evening Snacks
-                </label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">☕ Evening Snacks</label>
                 <input
                   type="text"
                   value={foodForm.eveningSnacks}
                   onChange={(e) => setFoodForm({ ...foodForm, eveningSnacks: e.target.value })}
-                  placeholder="e.g. Samosa, biscuits, milk tea"
-                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  🍽️ Dinner (Ratri Ahara)
-                </label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">🍲 Dinner</label>
                 <input
                   type="text"
                   value={foodForm.dinner}
                   onChange={(e) => setFoodForm({ ...foodForm, dinner: e.target.value })}
-                  placeholder="e.g. 2 Rotis, sabzi, bedtime milk"
-                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  💧 Fluids & Drinks
-                </label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">💧 Daily Fluids</label>
                 <input
                   type="text"
                   value={foodForm.fluids}
                   onChange={(e) => setFoodForm({ ...foodForm, fluids: e.target.value })}
-                  placeholder="e.g. Chilled refrigerator water, soda, tea"
-                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white"
                 />
               </div>
 
               <div className="flex items-end">
                 <button
                   type="submit"
-                  className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-xs flex items-center justify-center gap-1.5"
+                  className="w-full py-2 px-4 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors cursor-pointer"
                 >
-                  <Sparkles className="w-4 h-4" />
                   Save & Ingest into AI Engine
                 </button>
               </div>
@@ -508,154 +539,38 @@ export const DashboardView = ({
         )}
       </div>
 
-      {/* LOWER SPLIT SECTION: Dosha Meter & AI Clinical Summary Spotlight */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        {/* Left Column (5 Cols): Interactive Dosha Breakdown */}
-        <div className="lg:col-span-5 space-y-4">
-          <DoshaMeter compact={false} />
+      {/* QUICK WORKFLOW BAR */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs">
+        <div className="flex items-center gap-2">
+          <Stethoscope className="w-4 h-4 text-emerald-600" />
+          <span className="text-xs font-bold text-slate-800">Quick Navigation:</span>
         </div>
 
-        {/* Right Column (7 Cols): AI Clinical Summary & Vaidya Status */}
-        <div className="lg:col-span-7 bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs flex flex-col justify-between">
-          <div>
-            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-xs">
-                  <Sparkles className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-slate-800">
-                    Latest AI Clinical Assessment
-                  </h3>
-                  <p className="text-[11px] text-slate-500">Case ID: {aiSummary.caseId}</p>
-                </div>
-              </div>
-
-              <span className={`px-2.5 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 ${
-                aiSummary.verifiedByDoctor 
-                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                  : 'bg-amber-50 text-amber-800 border border-amber-200'
-              }`}>
-                {aiSummary.verifiedByDoctor ? (
-                  <>
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                    Verified by Vaidya
-                  </>
-                ) : (
-                  <>
-                    <Clock className="w-3.5 h-3.5 text-amber-600" />
-                    Pending Vaidya Verification
-                  </>
-                )}
-              </span>
-            </div>
-
-            {/* Ayurvedic Disease Classification */}
-            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 mb-4">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                  Ayurvedic Diagnosis (Roga Nidana)
-                </span>
-                <span className="text-[11px] font-semibold text-emerald-700">
-                  Dosha: {aiSummary.rogaNidana.dosha}
-                </span>
-              </div>
-              <h4 className="text-base font-extrabold text-slate-900">
-                {aiSummary.rogaNidana.vyadhi}
-              </h4>
-              <p className="text-xs text-slate-600 mt-1 line-clamp-2">
-                {aiSummary.synthesisOverview}
-              </p>
-            </div>
-
-            {/* Prescribed Herbs Teaser */}
-            <div>
-              <p className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                AI Suggested Classical Formulations:
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {aiSummary.prescribedFormulations.slice(0, 2).map((herb) => (
-                  <div key={herb.id} className="p-2.5 rounded-xl border border-emerald-100 bg-emerald-50/50">
-                    <p className="text-xs font-bold text-emerald-900">{herb.name}</p>
-                    <p className="text-[11px] text-slate-600">{herb.dose} • {herb.timing}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Action Row */}
-          <div className="pt-5 mt-5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-xs text-slate-500">
-              <Stethoscope className="w-4 h-4 text-teal-600" />
-              <span>Attending Vaidya: <strong>Dr. Priyadarshini Joshi</strong></span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => onNavigate('ai-summary')}
-                className="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
-              >
-                Full Clinical Summary
-              </button>
-              <button
-                onClick={() => onNavigate('vaidya-review')}
-                className="flex items-center gap-1 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-xs"
-              >
-                <Stethoscope className="w-3.5 h-3.5" />
-                Vaidya Review & Sign
-              </button>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      {/* RECENT UPLOADED MEDICAL DOCUMENTS */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-              <FileCheck className="w-4 h-4 text-emerald-600" />
-              Extracted Health Records in System
-            </h3>
-            <p className="text-xs text-slate-500">
-              Scanned, categorized, and structured using simulated AI Optical Character Recognition
-            </p>
-          </div>
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => onNavigate('upload-records')}
-            className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 hover:underline"
+            className="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
           >
-            + Upload Another Document
+            Upload New Record via OCR
           </button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {oldRecords.map((rec) => (
-            <div 
-              key={rec.id}
-              onClick={() => onNavigate('upload-records')}
-              className="p-3.5 rounded-2xl border border-slate-200/80 hover:border-emerald-300 hover:bg-emerald-50/20 transition-all cursor-pointer flex items-start justify-between gap-2"
-            >
-              <div className="flex items-start gap-2.5 min-w-0">
-                <div className="p-2 rounded-xl bg-slate-100 text-slate-700 flex-shrink-0 mt-0.5">
-                  <FileText className="w-4 h-4" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-bold text-slate-800 truncate">{rec.title}</p>
-                  <p className="text-[11px] text-slate-500">{rec.institution}</p>
-                  <p className="text-[10px] text-emerald-700 font-medium mt-1">
-                    Confidence: {rec.confidence}% • {rec.date}
-                  </p>
-                </div>
-              </div>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 flex-shrink-0">
-                {rec.type}
-              </span>
-            </div>
-          ))}
+          <button
+            onClick={() => onNavigate('timeline')}
+            className="px-3 py-1.5 rounded-xl text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors cursor-pointer"
+          >
+            Interactive Medical Timeline & Graph
+          </button>
+          <button
+            onClick={() => onNavigate('case-taking')}
+            className="px-3 py-1.5 rounded-xl text-xs font-semibold text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-200 transition-colors cursor-pointer"
+          >
+            Ayurvedic Case Wizard
+          </button>
+          <button
+            onClick={() => onNavigate('ai-summary')}
+            className="px-3 py-1.5 rounded-xl text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors cursor-pointer"
+          >
+            Official Prescription Handout
+          </button>
         </div>
       </div>
 

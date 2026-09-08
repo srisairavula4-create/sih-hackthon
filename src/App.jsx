@@ -76,7 +76,7 @@ export default function App() {
   // Persistent Extracted Medical Records
   const [oldRecords, setOldRecords] = useState(() => {
     try {
-      const saved = localStorage.getItem('ayurvaidya_records');
+      const saved = localStorage.getItem('ayurvaidya_records_v2');
       if (saved) return JSON.parse(saved);
     } catch (e) {}
     return SAMPLE_OLD_RECORDS;
@@ -85,7 +85,7 @@ export default function App() {
   // Persistent Timeline
   const [timeline, setTimeline] = useState(() => {
     try {
-      const saved = localStorage.getItem('ayurvaidya_timeline');
+      const saved = localStorage.getItem('ayurvaidya_timeline_v2');
       if (saved) return JSON.parse(saved);
     } catch (e) {}
     return INITIAL_TIMELINE;
@@ -233,7 +233,7 @@ export default function App() {
     setOldRecords(prev => {
       const updated = [newRec, ...prev.filter(r => r.id !== newRec.id)];
       try {
-        localStorage.setItem('ayurvaidya_records', JSON.stringify(updated));
+        localStorage.setItem('ayurvaidya_records_v2', JSON.stringify(updated));
       } catch (e) {}
       return updated;
     });
@@ -280,7 +280,7 @@ export default function App() {
     setTimeline(prev => {
       const updated = [timelineEntry, ...prev.filter(t => t.recordId !== newRec.id)];
       try {
-        localStorage.setItem('ayurvaidya_timeline', JSON.stringify(updated));
+        localStorage.setItem('ayurvaidya_timeline_v2', JSON.stringify(updated));
       } catch (e) {}
       return updated;
     });
