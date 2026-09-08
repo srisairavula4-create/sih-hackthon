@@ -222,7 +222,7 @@ export const DashboardView = ({
             </div>
 
             <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-sky-700 group-hover:text-sky-800">
-              <span>{patient.isAbhaLinked ? 'Open Digital Card' : 'Verify with OTP'}</span>
+              <span>Open Digital Card & QR</span>
               <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </div>
           </div>

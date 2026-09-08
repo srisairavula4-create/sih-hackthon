@@ -2,7 +2,6 @@ import React from 'react';
 import { 
   Sparkles, 
   User, 
-  Stethoscope, 
   ShieldCheck, 
   Bell, 
   FileText, 
@@ -17,21 +16,22 @@ import {
 export const Navbar = ({ 
   currentView, 
   setCurrentView, 
-  userRole, 
-  setUserRole, 
   patient, 
-  vaidya, 
   onOpenAbha, 
   hasMissingDoc, 
   onShowMissingDocAlert,
   onLogout
 }) => {
+  const patientInitials = patient.name 
+    ? patient.name.trim().split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() 
+    : 'PT';
+
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs py-2.5 sm:py-3">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between min-h-[3.25rem]">
           
-          {/* Logo & Hackathon Tag */}
+          {/* Logo & Portal Badge */}
           <div className="flex items-center gap-3 cursor-pointer flex-shrink-0" onClick={() => setCurrentView('dashboard')}>
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 flex-shrink-0">
               <Sparkles className="w-5 h-5 text-emerald-100 animate-pulse" />
@@ -42,16 +42,16 @@ export const Navbar = ({
                   Ayur<span className="text-emerald-600">Vaidya</span> <span className="text-teal-600">AI</span>
                 </span>
                 <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex-shrink-0">
-                  SIH 2024
+                  Patient Portal
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 hidden xl:block leading-tight mt-0.5">
-                Intelligent Ayurvedic Case-Taking & Health Records System
+                Ayurvedic Case-Taking & Longitudinal ABHA Health Records
               </p>
             </div>
           </div>
 
-          {/* Center Navigation Links */}
+          {/* Center Navigation Links (Patient-Only) */}
           <nav className="hidden md:flex items-center gap-1 bg-slate-100/70 p-1 rounded-xl border border-slate-200/60">
             <button
               onClick={() => setCurrentView('dashboard')}
@@ -109,49 +109,23 @@ export const Navbar = ({
                   : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5 text-teal-600" />
-              AI Summary
-            </button>
-
-            <button
-              onClick={() => {
-                setUserRole('vaidya');
-                setCurrentView('vaidya-review');
-              }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                currentView === 'vaidya-review'
-                  ? 'bg-white text-teal-700 shadow-xs font-semibold'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
-              }`}
-            >
-              <Stethoscope className="w-3.5 h-3.5 text-teal-600" />
-              Vaidya Portal
+              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+              AI Clinical Summary
             </button>
           </nav>
 
           {/* Right Action Bar */}
           <div className="flex items-center gap-2.5">
             
-            {/* ABHA Badge / Link Button */}
-            {patient.isAbhaLinked ? (
-              <button
-                onClick={onOpenAbha}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors shadow-2xs"
-                title="ABHA ID Linked & Verified"
-              >
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                <span className="font-mono text-[11px] font-semibold">ABHA Verified</span>
-              </button>
-            ) : (
-              <button
-                onClick={onOpenAbha}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100 transition-colors shadow-2xs animate-bounce"
-                title="Link Ayushman Bharat Digital Health Account"
-              >
-                <CreditCard className="w-3.5 h-3.5 text-teal-600" />
-                <span className="text-[11px] font-semibold">Link ABHA</span>
-              </button>
-            )}
+            {/* Compulsory ABHA Badge */}
+            <button
+              onClick={onOpenAbha}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 transition-colors shadow-2xs"
+              title="Compulsory ABHA ID Linked to ABDM Records"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+              <span className="font-mono text-[11px] font-bold">ABHA: {patient.abhaId}</span>
+            </button>
 
             {/* Notification Bell (with missing doc alert) */}
             <button
@@ -165,54 +139,23 @@ export const Navbar = ({
               )}
             </button>
 
-            {/* Role Switcher Toggle */}
-            <div className="hidden sm:flex items-center border border-slate-200 bg-slate-50 rounded-xl p-0.5 text-xs">
-              <button
-                onClick={() => setUserRole('patient')}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg transition-all ${
-                  userRole === 'patient'
-                    ? 'bg-white text-emerald-700 shadow-xs font-semibold'
-                    : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                <User className="w-3.5 h-3.5" />
-                Patient
-              </button>
-              <button
-                onClick={() => {
-                  setUserRole('vaidya');
-                  if (currentView === 'dashboard') {
-                    setCurrentView('vaidya-review');
-                  }
-                }}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg transition-all ${
-                  userRole === 'vaidya'
-                    ? 'bg-white text-teal-700 shadow-xs font-semibold'
-                    : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                <Stethoscope className="w-3.5 h-3.5" />
-                Vaidya
-              </button>
-            </div>
-
-            {/* User Profile Pill */}
+            {/* Patient Profile Pill */}
             <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
-              <div className="w-8 h-8 rounded-full bg-emerald-100 border border-emerald-300 flex items-center justify-center text-emerald-800 font-bold text-xs">
-                {userRole === 'patient' ? 'AS' : 'PJ'}
+              <div className="w-8 h-8 rounded-full bg-emerald-100 border border-emerald-300 flex items-center justify-center text-emerald-800 font-bold text-xs flex-shrink-0">
+                {patientInitials}
               </div>
               <div className="hidden lg:block text-left text-xs leading-tight">
-                <p className="font-semibold text-slate-800">
-                  {userRole === 'patient' ? patient.name : vaidya.name}
+                <p className="font-semibold text-slate-800 truncate max-w-[120px]">
+                  {patient.name}
                 </p>
-                <p className="text-[10px] text-slate-500">
-                  {userRole === 'patient' ? `ID: ${patient.id}` : 'Vaidya Consultant'}
+                <p className="text-[10px] text-emerald-700 font-medium">
+                  ABDM Verified
                 </p>
               </div>
               <button 
                 onClick={onLogout}
-                className="text-xs text-slate-400 hover:text-rose-600 ml-1 transition-colors"
-                title="Switch persona or sign out"
+                className="text-xs text-slate-400 hover:text-rose-600 ml-1 transition-colors px-1 py-0.5"
+                title="Sign out of patient portal"
               >
                 Logout
               </button>

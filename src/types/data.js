@@ -9,7 +9,7 @@ export const INITIAL_PATIENT = {
   email: "aarav.sharma@example.com",
   abhaId: "91-2345-6789-1234",
   abhaAddress: "aarav.sharma@abdm",
-  isAbhaLinked: false,
+  isAbhaLinked: true,
   bloodGroup: "B+",
   emergencyContact: "Sunita Sharma (Spouse) - +91 98765 43211",
   prakriti: "Pitta-Kapha",

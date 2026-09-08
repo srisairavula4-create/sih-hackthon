@@ -1,37 +1,57 @@
 import React, { useState } from 'react';
-import { Sparkles, Shield, User, Stethoscope, Lock, Phone, Mail, ArrowRight, CheckCircle2, HeartPulse, UserPlus, LogIn } from 'lucide-react';
+import { 
+  Sparkles, 
+  Shield, 
+  User, 
+  Lock, 
+  Phone, 
+  ArrowRight, 
+  CheckCircle2, 
+  HeartPulse, 
+  UserPlus, 
+  LogIn, 
+  CreditCard,
+  KeyRound,
+  FileCheck
+} from 'lucide-react';
 
 export const AuthView = ({ onLoginSuccess }) => {
   const [authMode, setAuthMode] = useState('login'); // 'login' | 'register'
-  const [selectedRole, setSelectedRole] = useState('patient'); // 'patient' | 'vaidya'
   
-  // Login Form State - Blank by default so user creates and logs in their own profile
+  // Login Form State
   const [loginIdentifier, setLoginIdentifier] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [loginError, setLoginError] = useState('');
 
-  // Registration Form State - User creates their own custom patient
+  // Registration Form State (email and emergencyContact removed; abhaId is COMPULSORY)
   const [regForm, setRegForm] = useState({
     fullName: '',
     age: '',
     gender: 'Male',
     phone: '',
-    email: '',
-    abhaNumber: '',
-    emergencyContact: '',
+    abhaId: '',
     password: '',
     confirmPassword: ''
   });
   const [regErrors, setRegErrors] = useState({});
 
-  const handleQuickVaidyaLogin = () => {
-    onLoginSuccess('vaidya', {
-      id: "DOC-AYU-108",
-      name: "Dr. Priyadarshini Joshi",
-      qualification: "BAMS, MD (Ayurveda - Kayachikitsa)",
-      regNumber: "AYU-MH-2018-0924",
-      hospital: "National Institute of Ayurveda & AyurVaidya AI Research Wing"
-    });
+  const handleFillDemoLogin = () => {
+    setLoginIdentifier('91-2345-6789-1234');
+    setLoginPassword('password123');
+    setLoginError('');
+  };
+
+  const handleAutoFillAbha = () => {
+    // Generate a realistic 14-digit ABHA ID
+    const random10 = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+    const formatted = `91-${random10.slice(0, 4)}-${random10.slice(4, 8)}-${random10.slice(8, 12) || '1234'}`;
+    setRegForm(prev => ({
+      ...prev,
+      abhaId: formatted
+    }));
+    if (regErrors.abhaId) {
+      setRegErrors(prev => ({ ...prev, abhaId: '' }));
+    }
   };
 
   const handleLoginSubmit = (e) => {
@@ -39,7 +59,7 @@ export const AuthView = ({ onLoginSuccess }) => {
     setLoginError('');
 
     if (!loginIdentifier.trim()) {
-      setLoginError('Please enter your mobile number, email, or ABHA ID.');
+      setLoginError('Please enter your mobile number or 14-digit ABHA ID.');
       return;
     }
     if (!loginPassword.trim()) {
@@ -47,28 +67,34 @@ export const AuthView = ({ onLoginSuccess }) => {
       return;
     }
 
-    if (selectedRole === 'vaidya') {
-      handleQuickVaidyaLogin();
-    } else {
-      // Dynamic Login with user's entered credential
-      const username = loginIdentifier.includes('@') 
-        ? loginIdentifier.split('@')[0].replace(/[^a-zA-Z]/g, ' ').trim() 
-        : `Patient ${loginIdentifier.slice(-4)}`;
-      const formattedName = username ? username.charAt(0).toUpperCase() + username.slice(1) : "Registered Patient";
+    const cleaned = loginIdentifier.trim();
+    const isAbhaFormat = cleaned.includes('-') || cleaned.replace(/[^0-9]/g, '').length >= 14;
+    const resolvedAbha = isAbhaFormat ? cleaned : "91-2345-6789-1234";
 
-      onLoginSuccess('patient', {
-        id: "P-" + Math.floor(10000 + Math.random() * 90000),
-        name: formattedName,
-        age: 36,
-        gender: "Male",
-        phone: loginIdentifier.includes('@') ? "+91 98765 43210" : loginIdentifier,
-        email: loginIdentifier.includes('@') ? loginIdentifier : `${loginIdentifier}@patient.com`,
-        abhaId: "91-2345-6789-1234",
-        abhaAddress: `${formattedName.toLowerCase().replace(/\s+/g, '')}@abdm`,
-        isAbhaLinked: true,
-        bloodGroup: "B+"
-      });
-    }
+    const username = loginIdentifier.replace(/[^a-zA-Z]/g, ' ').trim() || `Patient ${cleaned.slice(-4)}`;
+    const formattedName = username ? username.charAt(0).toUpperCase() + username.slice(1) : "Registered Patient";
+
+    onLoginSuccess('patient', {
+      id: "P-" + Math.floor(10000 + Math.random() * 90000),
+      name: formattedName,
+      age: 38,
+      gender: "Male",
+      phone: cleaned.replace(/[^0-9]/g, '').slice(-10) || "9876543210",
+      abhaId: resolvedAbha,
+      abhaAddress: `${formattedName.toLowerCase().replace(/[^a-z0-9]/g, '')}@abdm`,
+      isAbhaLinked: true,
+      bloodGroup: "B+",
+      prakriti: "Pitta-Kapha",
+      vikriti: "Kapha-Vataja (Ama-yukta)",
+      vitals: {
+        bp: "128/82 mmHg",
+        pulse: "74 bpm",
+        weight: "74 kg",
+        height: "172 cm",
+        bloodSugarFasting: "138 mg/dL",
+        lastRecorded: "Today"
+      }
+    });
   };
 
   const handleRegisterSubmit = (e) => {
@@ -76,18 +102,24 @@ export const AuthView = ({ onLoginSuccess }) => {
     const errors = {};
 
     if (!regForm.fullName.trim()) errors.fullName = 'Full name is required';
+    
     if (!regForm.age || parseInt(regForm.age) <= 0 || parseInt(regForm.age) > 120) {
       errors.age = 'Please enter a valid age (1-120)';
     }
-    if (!regForm.phone.trim() || regForm.phone.length < 10) {
+
+    const digitsOnlyPhone = regForm.phone.replace(/[^0-9]/g, '');
+    if (!regForm.phone.trim() || digitsOnlyPhone.length < 10) {
       errors.phone = 'Valid 10-digit mobile number required';
     }
-    if (!regForm.email.trim() || !regForm.email.includes('@')) {
-      errors.email = 'Valid email address required';
+
+    // MANDATORY COMPULSORY ABHA ID VALIDATION
+    const digitsOnlyAbha = regForm.abhaId.replace(/[^0-9]/g, '');
+    if (!regForm.abhaId.trim()) {
+      errors.abhaId = 'ABHA ID is compulsory! Every patient record must be linked to a valid ABHA ID.';
+    } else if (digitsOnlyAbha.length < 14) {
+      errors.abhaId = `ABHA ID must have 14 digits (currently ${digitsOnlyAbha.length} digits). Format: XX-XXXX-XXXX-XXXX`;
     }
-    if (!regForm.emergencyContact.trim()) {
-      errors.emergencyContact = 'Emergency contact person & phone required';
-    }
+
     if (!regForm.password || regForm.password.length < 6) {
       errors.password = 'Password must be at least 6 characters';
     }
@@ -100,19 +132,27 @@ export const AuthView = ({ onLoginSuccess }) => {
       return;
     }
 
-    // Success registration
+    // Successful registration with compulsory ABHA ID permanently linked
     onLoginSuccess('patient', {
       id: "P-" + Math.floor(10000 + Math.random() * 90000),
-      name: regForm.fullName,
+      name: regForm.fullName.trim(),
       age: parseInt(regForm.age),
       gender: regForm.gender,
-      phone: regForm.phone,
-      email: regForm.email,
-      abhaId: regForm.abhaNumber || "91-8842-1092-3847",
-      abhaAddress: `${regForm.fullName.toLowerCase().replace(/\s+/g, '')}@abdm`,
-      isAbhaLinked: !!regForm.abhaNumber,
-      bloodGroup: "O+",
-      emergencyContact: regForm.emergencyContact
+      phone: regForm.phone.trim(),
+      abhaId: regForm.abhaId.trim(),
+      abhaAddress: `${regForm.fullName.toLowerCase().replace(/[^a-z0-9]/g, '')}@abdm`,
+      isAbhaLinked: true,
+      bloodGroup: "B+",
+      prakriti: "Pitta-Kapha",
+      vikriti: "Kapha-Vataja (Ama-yukta)",
+      vitals: {
+        bp: "128/82 mmHg",
+        pulse: "74 bpm",
+        weight: "72 kg",
+        height: "172 cm",
+        bloodSugarFasting: "136 mg/dL",
+        lastRecorded: "Today"
+      }
     });
   };
 
@@ -130,41 +170,36 @@ export const AuthView = ({ onLoginSuccess }) => {
             Ayur<span className="text-emerald-600">Vaidya</span> <span className="text-teal-600">AI</span>
           </h2>
           <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md bg-emerald-100 text-emerald-800 border border-emerald-300">
-            SIH Prototype
+            Patient Portal
           </span>
         </div>
         <p className="text-xs text-slate-600 max-w-sm mx-auto leading-relaxed">
-          Intelligent Classical Ayurvedic Case-Taking, Multimodal Record Extraction & ABDM Integration
+          AI-Powered Classical Ayurvedic Case-Taking, Medical Timeline & Compulsory ABDM ABHA Records Integration
         </p>
       </div>
 
       <div className="sm:mx-auto sm:w-full sm:max-w-lg">
         
-        {/* Quick Demo Test-Drive Banner */}
-        {/* Authentication Notice Banner */}
-        <div className="bg-white/90 border border-slate-200/90 rounded-2xl p-4 shadow-sm mb-5 backdrop-blur-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        {/* Compulsory ABHA Architecture Banner */}
+        <div className="bg-white/90 border border-emerald-200/90 rounded-2xl p-4 shadow-xs mb-5 backdrop-blur-xs flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center font-bold flex-shrink-0">
-              <User className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center flex-shrink-0">
+              <CreditCard className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-800">Create & Log in Your Own Patient Account</p>
-              <p className="text-[11px] text-slate-500">Register with your name to start personalized Ayurvedic case-taking & link ABHA.</p>
+              <p className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                <span>Compulsory ABHA ID Integration</span>
+                <span className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full font-semibold">Mandatory</span>
+              </p>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                All case sheets, lab reports, and Ayurvedic prescriptions are permanently linked to the patient's 14-digit ABHA ID.
+              </p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={handleQuickVaidyaLogin}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 text-xs font-semibold transition-all self-end sm:self-auto flex-shrink-0"
-            title="Access Doctor / Vaidya workstation directly"
-          >
-            <Stethoscope className="w-3.5 h-3.5 text-teal-600" />
-            <span>Doctor Sign In</span>
-          </button>
         </div>
 
-        {/* Main Card with Tabs */}
-        <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-sm">
+        {/* Main Authentication Card */}
+        <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs">
           
           {/* Tab Selection */}
           <div className="flex border-b border-slate-200 pb-3 mb-6">
@@ -177,7 +212,7 @@ export const AuthView = ({ onLoginSuccess }) => {
               }`}
             >
               <LogIn className="w-4 h-4" />
-              Sign In
+              Patient Sign In
             </button>
             <button
               onClick={() => { setAuthMode('register'); setRegErrors({}); }}
@@ -188,40 +223,14 @@ export const AuthView = ({ onLoginSuccess }) => {
               }`}
             >
               <UserPlus className="w-4 h-4" />
-              Patient Registration (Only)
+              New Patient Registration
             </button>
           </div>
 
-          {/* LOGIN FORM */}
+          {/* LOGIN FORM (PATIENT ONLY) */}
           {authMode === 'login' ? (
             <form onSubmit={handleLoginSubmit} className="space-y-4">
               
-              {/* Role Toggle */}
-              <div className="flex bg-slate-100 p-1 rounded-xl mb-4 text-xs">
-                <button
-                  type="button"
-                  onClick={() => setSelectedRole('patient')}
-                  className={`flex-1 py-2 rounded-lg font-semibold transition-all ${
-                    selectedRole === 'patient'
-                      ? 'bg-white text-emerald-700 shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  Patient Login
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedRole('vaidya')}
-                  className={`flex-1 py-2 rounded-lg font-semibold transition-all ${
-                    selectedRole === 'vaidya'
-                      ? 'bg-white text-teal-700 shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  Doctor / Vaidya Login
-                </button>
-              </div>
-
               {loginError && (
                 <div className="p-3 bg-rose-50 text-rose-700 rounded-xl text-xs border border-rose-200">
                   {loginError}
@@ -229,9 +238,18 @@ export const AuthView = ({ onLoginSuccess }) => {
               )}
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Mobile Number / Email / ABHA ID
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-semibold text-slate-700">
+                    Mobile Number or 14-Digit ABHA ID <span className="text-rose-500">*</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleFillDemoLogin}
+                    className="text-[11px] font-semibold text-emerald-600 hover:underline"
+                  >
+                    ⚡ Demo Quick-Fill
+                  </button>
+                </div>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                     <User className="w-4 h-4" />
@@ -240,8 +258,8 @@ export const AuthView = ({ onLoginSuccess }) => {
                     type="text"
                     value={loginIdentifier}
                     onChange={(e) => setLoginIdentifier(e.target.value)}
-                    placeholder="e.g. 9876543210 or aarav@example.com"
-                    className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                    placeholder="e.g. 9876543210 or 91-2345-6789-1234"
+                    className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-mono"
                   />
                 </div>
               </div>
@@ -249,11 +267,11 @@ export const AuthView = ({ onLoginSuccess }) => {
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="text-xs font-semibold text-slate-700">
-                    Password
+                    Password <span className="text-rose-500">*</span>
                   </label>
-                  <a href="#forgot" onClick={(e) => { e.preventDefault(); alert("For demo purposes, use password123 or 1-Click Demo buttons above."); }} className="text-[11px] text-emerald-600 hover:underline">
-                    Forgot Password?
-                  </a>
+                  <span className="text-[11px] text-slate-400">
+                    Default demo: password123
+                  </span>
                 </div>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -263,6 +281,7 @@ export const AuthView = ({ onLoginSuccess }) => {
                     type="password"
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
+                    placeholder="Enter your account password"
                     className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                   />
                 </div>
@@ -270,39 +289,40 @@ export const AuthView = ({ onLoginSuccess }) => {
 
               <button
                 type="submit"
-                className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl shadow-sm shadow-emerald-600/30 transition-colors flex items-center justify-center gap-2 mt-2"
+                className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl shadow-xs transition-colors flex items-center justify-center gap-2 mt-2"
               >
                 <LogIn className="w-4 h-4" />
-                Sign In to System
+                Sign In to Patient Portal
               </button>
 
               <div className="text-center pt-3 border-t border-slate-100">
                 <p className="text-xs text-slate-500">
-                  New to AyurVaidya AI?{' '}
+                  Don't have an account?{' '}
                   <button 
                     type="button" 
                     onClick={() => setAuthMode('register')} 
                     className="text-emerald-700 font-semibold hover:underline"
                   >
-                    Register your Patient Case
+                    Register New Patient with ABHA ID
                   </button>
                 </p>
               </div>
             </form>
           ) : (
-            /* REGISTRATION FORM - STRICTLY FOR PATIENTS */
+            /* REGISTRATION FORM - STRICTLY FOR PATIENTS, COMPULSORY ABHA ID, NO EMAIL / NO EMERGENCY CONTACT */
             <form onSubmit={handleRegisterSubmit} className="space-y-3.5">
               
-              <div className="p-3 bg-emerald-50/80 border border-emerald-200/80 rounded-2xl text-xs text-emerald-900 flex items-start gap-2.5 mb-2">
-                <User className="w-4 h-4 text-emerald-700 flex-shrink-0 mt-0.5" />
+              <div className="p-3 bg-emerald-50/80 border border-emerald-200/80 rounded-2xl text-xs text-emerald-900 flex items-start gap-2.5">
+                <Shield className="w-4 h-4 text-emerald-700 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-bold">Patient Case-File Registration Only</p>
+                  <p className="font-bold">Patient Registration with Mandatory ABHA Linkage</p>
                   <p className="text-[11px] text-slate-600 mt-0.5">
-                    This form is exclusively for patients to register their health profile and link ABHA. Doctors/Vaidyas use the Sign In tab.
+                    Your 14-digit ABHA ID is compulsory. All clinical case histories, lab scans, and dietary summaries will be strictly governed by your ABHA ID.
                   </p>
                 </div>
               </div>
               
+              {/* Full Name */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Full Name <span className="text-rose-500">*</span>
@@ -317,6 +337,7 @@ export const AuthView = ({ onLoginSuccess }) => {
                 {regErrors.fullName && <p className="text-[11px] text-rose-600 mt-0.5">{regErrors.fullName}</p>}
               </div>
 
+              {/* Age & Gender */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
@@ -348,63 +369,51 @@ export const AuthView = ({ onLoginSuccess }) => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Mobile Number <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="tel"
-                    placeholder="10-digit mobile"
-                    value={regForm.phone}
-                    onChange={(e) => setRegForm({...regForm, phone: e.target.value})}
-                    className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-                  />
-                  {regErrors.phone && <p className="text-[11px] text-rose-600 mt-0.5">{regErrors.phone}</p>}
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Email Address <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="name@email.com"
-                    value={regForm.email}
-                    onChange={(e) => setRegForm({...regForm, email: e.target.value})}
-                    className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-                  />
-                  {regErrors.email && <p className="text-[11px] text-rose-600 mt-0.5">{regErrors.email}</p>}
-                </div>
-              </div>
-
+              {/* Mobile Number */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  14-Digit ABHA ID (Optional)
+                  10-Digit Mobile Number <span className="text-rose-500">*</span>
                 </label>
                 <input
-                  type="text"
-                  placeholder="e.g. 91-2345-6789-1234 (Can link later)"
-                  value={regForm.abhaNumber}
-                  onChange={(e) => setRegForm({...regForm, abhaNumber: e.target.value})}
+                  type="tel"
+                  placeholder="e.g. 9876543210"
+                  value={regForm.phone}
+                  onChange={(e) => setRegForm({...regForm, phone: e.target.value})}
                   className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-mono"
                 />
+                {regErrors.phone && <p className="text-[11px] text-rose-600 mt-0.5">{regErrors.phone}</p>}
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Emergency Contact (Name & Phone) <span className="text-rose-500">*</span>
-                </label>
+              {/* 14-DIGIT ABHA ID (COMPULSORY / MANDATORY) */}
+              <div className="p-3.5 rounded-2xl bg-emerald-50/40 border border-emerald-300">
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                    <CreditCard className="w-3.5 h-3.5 text-emerald-700" />
+                    <span>14-Digit ABHA ID (Compulsory)</span>
+                    <span className="text-rose-500">*</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleAutoFillAbha}
+                    className="text-[11px] font-bold text-emerald-700 hover:text-emerald-900 hover:underline flex items-center gap-1"
+                  >
+                    <span>⚡ Auto-Generate Valid ABHA ID</span>
+                  </button>
+                </div>
                 <input
                   type="text"
-                  placeholder="e.g. Priya Verma (Spouse) - 9876543211"
-                  value={regForm.emergencyContact}
-                  onChange={(e) => setRegForm({...regForm, emergencyContact: e.target.value})}
-                  className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  placeholder="e.g. 91-2345-6789-1234 (14 digits)"
+                  value={regForm.abhaId}
+                  onChange={(e) => setRegForm({...regForm, abhaId: e.target.value})}
+                  className="w-full px-3.5 py-2 text-sm bg-white border border-emerald-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-600 font-mono font-semibold text-slate-800"
                 />
-                {regErrors.emergencyContact && <p className="text-[11px] text-rose-600 mt-0.5">{regErrors.emergencyContact}</p>}
+                {regErrors.abhaId && <p className="text-[11px] text-rose-600 font-semibold mt-1">{regErrors.abhaId}</p>}
+                <p className="text-[10px] text-slate-500 mt-1">
+                  Mandatory under Ayushman Bharat Digital Mission (ABDM). All patient records are strictly linked through this ID.
+                </p>
               </div>
 
+              {/* Password & Confirm Password */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
@@ -437,10 +446,10 @@ export const AuthView = ({ onLoginSuccess }) => {
 
               <button
                 type="submit"
-                className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl shadow-sm shadow-emerald-600/30 transition-colors flex items-center justify-center gap-2 mt-4"
+                className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl shadow-xs transition-colors flex items-center justify-center gap-2 mt-4"
               >
                 <UserPlus className="w-4 h-4" />
-                Complete Registration & Open Dashboard
+                Register & Link Mandatory ABHA ID
               </button>
             </form>
           )}

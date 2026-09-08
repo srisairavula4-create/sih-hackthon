@@ -22,7 +22,7 @@ import {
 export default function App() {
   // Start unauthenticated so user creates and logs in their own profile
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userRole, setUserRole] = useState('patient'); // 'patient' | 'vaidya'
+  const userRole = 'patient';
   const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' | 'case-taking' | 'upload-records' | 'timeline' | 'ai-summary' | 'vaidya-review'
   
   // Data States - starts dynamically populated from user's registration
@@ -35,7 +35,7 @@ export default function App() {
     email: "patient@example.com",
     abhaId: "91-2345-6789-1234",
     abhaAddress: "patient@abdm",
-    isAbhaLinked: false,
+    isAbhaLinked: true,
     bloodGroup: "O+",
     emergencyContact: "Primary Caregiver - +91 98765 00001",
     prakriti: "Pitta-Kapha",

@@ -16,7 +16,7 @@ import {
   Stethoscope
 } from 'lucide-react';
 
-export const TimelineView = ({ timeline, onNavigateToUpload }) => {
+export const TimelineView = ({ patient, timeline, onNavigateToUpload }) => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [expandedItems, setExpandedItems] = useState({ 'TIME-01': true, 'TIME-02': true });
 

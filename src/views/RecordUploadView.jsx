@@ -17,7 +17,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 
-export const RecordUploadView = ({ oldRecords, onAddRecord, onNavigateToTimeline }) => {
+export const RecordUploadView = ({ patient, oldRecords, onAddRecord, onNavigateToTimeline }) => {
   const [selectedRecord, setSelectedRecord] = useState(oldRecords[0]);
   const [isScanning, setIsScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState(0);
