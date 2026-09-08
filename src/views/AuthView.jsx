@@ -118,12 +118,12 @@ export const AuthView = ({ onLoginSuccess }) => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/40 to-emerald-50/30 flex flex-col justify-center py-10 px-4 sm:px-6 lg:px-8">
       
       {/* Brand Header */}
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-lg shadow-emerald-600/25 mb-4">
-          <Sparkles className="w-8 h-8 text-emerald-100" />
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center mb-6 pt-2">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-lg shadow-emerald-600/25 mb-3">
+          <Sparkles className="w-7 h-7 text-emerald-100" />
         </div>
         
-        <div className="flex items-center justify-center gap-2 mb-1">
+        <div className="flex items-center justify-center gap-2 mb-1 whitespace-nowrap">
           <h2 className="text-2xl font-black text-slate-900 tracking-tight font-outfit">
             Ayur<span className="text-emerald-600">Vaidya</span> <span className="text-teal-600">AI</span>
           </h2>
@@ -131,7 +131,7 @@ export const AuthView = ({ onLoginSuccess }) => {
             SIH Prototype
           </span>
         </div>
-        <p className="text-sm text-slate-600 max-w-sm mx-auto">
+        <p className="text-xs text-slate-600 max-w-sm mx-auto leading-relaxed">
           Intelligent Classical Ayurvedic Case-Taking, Multimodal Record Extraction & ABDM Integration
         </p>
       </div>
@@ -139,7 +139,7 @@ export const AuthView = ({ onLoginSuccess }) => {
       <div className="sm:mx-auto sm:w-full sm:max-w-lg">
         
         {/* Quick Demo Test-Drive Banner */}
-        <div className="bg-white/90 border border-emerald-200 rounded-2xl p-4 shadow-sm mb-6 backdrop-blur-xs">
+        <div className="bg-white/90 border border-emerald-200 rounded-2xl p-4 shadow-sm mb-5 backdrop-blur-xs">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
@@ -148,7 +148,7 @@ export const AuthView = ({ onLoginSuccess }) => {
             <span className="text-[10px] font-medium text-slate-500">Instant Access</span>
           </div>
           <p className="text-xs text-slate-600 mb-3">
-            Select a pre-populated persona to test the complete end-to-end clinical workflow without typing:
+            Select a pre-populated persona to test the complete clinical workflow without manual entry:
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <button
@@ -206,7 +206,7 @@ export const AuthView = ({ onLoginSuccess }) => {
               }`}
             >
               <UserPlus className="w-4 h-4" />
-              New Patient Registration
+              Patient Registration (Only)
             </button>
           </div>
 
@@ -308,8 +308,18 @@ export const AuthView = ({ onLoginSuccess }) => {
               </div>
             </form>
           ) : (
-            /* REGISTRATION FORM */
+            /* REGISTRATION FORM - STRICTLY FOR PATIENTS */
             <form onSubmit={handleRegisterSubmit} className="space-y-3.5">
+              
+              <div className="p-3 bg-emerald-50/80 border border-emerald-200/80 rounded-2xl text-xs text-emerald-900 flex items-start gap-2.5 mb-2">
+                <User className="w-4 h-4 text-emerald-700 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-bold">Patient Case-File Registration Only</p>
+                  <p className="text-[11px] text-slate-600 mt-0.5">
+                    This form is exclusively for patients to register their health profile and link ABHA. Doctors/Vaidyas use the Sign In tab.
+                  </p>
+                </div>
+              </div>
               
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">

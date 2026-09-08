@@ -27,25 +27,25 @@ export const Navbar = ({
   onLogout
 }) => {
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs py-2.5 sm:py-3">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between min-h-[3.25rem]">
           
           {/* Logo & Hackathon Tag */}
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => setCurrentView('dashboard')}>
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
+          <div className="flex items-center gap-3 cursor-pointer flex-shrink-0" onClick={() => setCurrentView('dashboard')}>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 flex-shrink-0">
               <Sparkles className="w-5 h-5 text-emerald-100 animate-pulse" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-lg text-slate-800 tracking-tight font-outfit">
+            <div className="flex flex-col justify-center">
+              <div className="flex items-center gap-2 whitespace-nowrap">
+                <span className="font-extrabold text-base sm:text-lg text-slate-900 tracking-tight font-outfit">
                   Ayur<span className="text-emerald-600">Vaidya</span> <span className="text-teal-600">AI</span>
                 </span>
-                <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex-shrink-0">
                   SIH 2024
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 hidden sm:block">
+              <p className="text-[11px] text-slate-500 hidden xl:block leading-tight mt-0.5">
                 Intelligent Ayurvedic Case-Taking & Health Records System
               </p>
             </div>
