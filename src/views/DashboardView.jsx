@@ -155,242 +155,51 @@ export const DashboardView = ({
         </div>
       </div>
 
-      {/* CONDITION-WISE CLINICAL WORKSPACE: STOMACH PAIN (1 SIDE) & CHEST PAIN (1 SIDE) */}
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <h2 className="text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-              <Activity className="w-5 h-5 text-emerald-600" />
-              Condition-Wise Medical History & Clinical Records
-            </h2>
-            <p className="text-xs text-slate-500">
-              Reports and prescriptions organized strictly by respective condition: Stomach Pain on one side and Chest Pain on the other side. View complete AI case summaries in the AI Clinical Summary tab.
-            </p>
+      {/* CLINICAL PORTAL DIRECT NAVIGATION HUB */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <button
+          onClick={() => onNavigate('case-taking')}
+          className="p-4 rounded-2xl bg-white border border-slate-200/90 hover:border-emerald-500 hover:shadow-xs transition-all text-left group cursor-pointer"
+        >
+          <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
+            <FileText className="w-4 h-4" />
           </div>
+          <p className="text-xs font-bold text-slate-900 group-hover:text-emerald-700">Case Intake</p>
+          <p className="text-[10px] text-slate-500 mt-0.5">Ayurvedic assessment & Prakriti evaluation</p>
+        </button>
 
-          <button
-            onClick={() => onNavigate('upload-records')}
-            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs inline-flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
-          >
+        <button
+          onClick={() => onNavigate('upload-records')}
+          className="p-4 rounded-2xl bg-white border border-slate-200/90 hover:border-emerald-500 hover:shadow-xs transition-all text-left group cursor-pointer"
+        >
+          <div className="w-9 h-9 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
             <UploadCloud className="w-4 h-4" />
-            Upload New Condition Report
-          </button>
-        </div>
-
-        {/* 2-SIDE DUAL COLUMN LAYOUT */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          
-          {/* ========================================================================= */}
-          {/* SIDE 1 (LEFT): STOMACH PAIN (UDARA SHOOLA) RECORDS & AI CLINICAL SUMMARY */}
-          {/* ========================================================================= */}
-          <div className="bg-white rounded-3xl border-2 border-amber-200/90 p-6 shadow-xs space-y-5 flex flex-col justify-between hover:border-amber-300 transition-all">
-            
-            <div className="space-y-4">
-              {/* Header */}
-              <div className="flex items-start justify-between gap-3 pb-3 border-b border-amber-100">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-lg shadow-2xs">
-                    🩺
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 bg-amber-100 px-2 py-0.5 rounded-md">
-                      Condition 1 • Gastrointestinal
-                    </span>
-                    <h3 className="text-base font-black text-slate-900 mt-0.5">
-                      Stomach Pain History (Udara Shoola & Amlapitta)
-                    </h3>
-                  </div>
-                </div>
-
-                <span className="text-xs font-bold text-amber-900 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-xl">
-                  {stomachRecords.length} Records
-                </span>
-              </div>
-
-              {/* Link to Dedicated AI Clinical Summary Tab */}
-              <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/80 flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-amber-700 flex-shrink-0" />
-                  <div>
-                    <p className="text-xs font-bold text-amber-950">AI Case Summary Available</p>
-                    <p className="text-[11px] text-amber-800">Udara Shoola & Amlapitta diagnosis in AI Clinical Summary</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => onNavigate('ai-summary')}
-                  className="px-3 py-1.5 bg-amber-800 hover:bg-amber-900 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer flex-shrink-0"
-                >
-                  <span>Open AI Clinical Summary</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              {/* Respective Stomach Pain Reports & Prescriptions */}
-              <div className="space-y-2.5">
-                <p className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center justify-between">
-                  <span>Stomach Pain Reports & Prescriptions:</span>
-                  <span className="text-[10px] text-slate-400 font-normal">ABHA Stamped</span>
-                </p>
-
-                {stomachRecords.map((rec) => (
-                  <div
-                    key={rec.id}
-                    onClick={() => onNavigate('upload-records')}
-                    className="p-3.5 rounded-2xl border border-slate-200 hover:border-amber-300 hover:bg-amber-50/20 transition-all cursor-pointer bg-slate-50/60"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-start gap-2.5 min-w-0">
-                        <div className="p-2 rounded-xl bg-white border border-slate-200 text-amber-700 mt-0.5 flex-shrink-0">
-                          {rec.type === 'Prescription' ? <Pill className="w-4 h-4" /> : <FileText className="w-4 h-4" />}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-xs font-bold text-slate-900 truncate">{rec.title}</p>
-                          <p className="text-[11px] text-slate-500">{rec.institution}</p>
-                          
-                          {/* Snippet Values */}
-                          <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
-                            {rec.extractedData?.biomarkers?.slice(0, 2).map((b, i) => (
-                              <span key={i} className="text-[10px] font-mono px-1.5 py-0.5 bg-white border border-amber-200 text-amber-900 rounded">
-                                {b.name}: {b.value}
-                              </span>
-                            ))}
-                            {rec.extractedData?.medications?.slice(0, 2).map((m, i) => (
-                              <span key={i} className="text-[10px] font-mono px-1.5 py-0.5 bg-white border border-amber-200 text-amber-900 rounded">
-                                {m.name} ({m.dose})
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-white border border-slate-200 text-slate-600 flex-shrink-0">
-                        {rec.type}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Side 1 Action */}
-            <div className="pt-4 border-t border-amber-100 flex items-center justify-between">
-              <span className="text-[11px] text-slate-500 font-mono">Condition ID: COND-GASTRO-01</span>
-              <button
-                onClick={() => onNavigate('upload-records')}
-                className="text-xs font-bold text-amber-800 hover:text-amber-900 hover:underline flex items-center gap-1 cursor-pointer"
-              >
-                + Add Stomach Pain File <ChevronRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
           </div>
+          <p className="text-xs font-bold text-slate-900 group-hover:text-teal-700">AI OCR Upload</p>
+          <p className="text-[10px] text-slate-500 mt-0.5">Strict medical doc verification & entity extraction</p>
+        </button>
 
-          {/* ========================================================================= */}
-          {/* SIDE 2 (RIGHT): CHEST PAIN (HRID-SHOOLA) RECORDS & AI CLINICAL SUMMARY */}
-          {/* ========================================================================= */}
-          <div className="bg-white rounded-3xl border-2 border-teal-200/90 p-6 shadow-xs space-y-5 flex flex-col justify-between hover:border-teal-300 transition-all">
-            
-            <div className="space-y-4">
-              {/* Header */}
-              <div className="flex items-start justify-between gap-3 pb-3 border-b border-teal-100">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-10 h-10 rounded-2xl bg-teal-100 text-teal-800 flex items-center justify-center font-bold text-lg shadow-2xs">
-                    ❤️
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-teal-800 bg-teal-100 px-2 py-0.5 rounded-md">
-                      Condition 2 • Cardiovascular & Metabolic
-                    </span>
-                    <h3 className="text-base font-black text-slate-900 mt-0.5">
-                      Chest Pain History (Hrid-Shoola & Dyslipidemia)
-                    </h3>
-                  </div>
-                </div>
-
-                <span className="text-xs font-bold text-teal-900 bg-teal-50 border border-teal-200 px-2.5 py-1 rounded-xl">
-                  {chestRecords.length} Records
-                </span>
-              </div>
-
-              {/* Link to Dedicated AI Clinical Summary Tab */}
-              <div className="p-3.5 rounded-2xl bg-teal-50/70 border border-teal-200/80 flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-teal-700 flex-shrink-0" />
-                  <div>
-                    <p className="text-xs font-bold text-teal-950">AI Case Summary Available</p>
-                    <p className="text-[11px] text-teal-800">Hrid-Shoola & lipid analysis in AI Clinical Summary</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => onNavigate('ai-summary')}
-                  className="px-3 py-1.5 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer flex-shrink-0"
-                >
-                  <span>Open AI Clinical Summary</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              {/* Respective Chest Pain Reports & Prescriptions */}
-              <div className="space-y-2.5">
-                <p className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center justify-between">
-                  <span>Chest Pain Reports & Prescriptions:</span>
-                  <span className="text-[10px] text-slate-400 font-normal">ABHA Stamped</span>
-                </p>
-
-                {chestRecords.map((rec) => (
-                  <div
-                    key={rec.id}
-                    onClick={() => onNavigate('upload-records')}
-                    className="p-3.5 rounded-2xl border border-slate-200 hover:border-teal-300 hover:bg-teal-50/20 transition-all cursor-pointer bg-slate-50/60"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-start gap-2.5 min-w-0">
-                        <div className="p-2 rounded-xl bg-white border border-slate-200 text-teal-700 mt-0.5 flex-shrink-0">
-                          {rec.type === 'Prescription' ? <Pill className="w-4 h-4" /> : <FileText className="w-4 h-4" />}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-xs font-bold text-slate-900 truncate">{rec.title}</p>
-                          <p className="text-[11px] text-slate-500">{rec.institution}</p>
-                          
-                          {/* Snippet Values */}
-                          <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
-                            {rec.extractedData?.biomarkers?.slice(0, 2).map((b, i) => (
-                              <span key={i} className="text-[10px] font-mono px-1.5 py-0.5 bg-white border border-teal-200 text-teal-900 rounded">
-                                {b.name}: {b.value}
-                              </span>
-                            ))}
-                            {rec.extractedData?.medications?.slice(0, 2).map((m, i) => (
-                              <span key={i} className="text-[10px] font-mono px-1.5 py-0.5 bg-white border border-teal-200 text-teal-900 rounded">
-                                {m.name} ({m.dose})
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-white border border-slate-200 text-slate-600 flex-shrink-0">
-                        {rec.type}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Side 2 Action */}
-            <div className="pt-4 border-t border-teal-100 flex items-center justify-between">
-              <span className="text-[11px] text-slate-500 font-mono">Condition ID: COND-CARDIO-02</span>
-              <button
-                onClick={() => onNavigate('upload-records')}
-                className="text-xs font-bold text-teal-800 hover:text-teal-900 hover:underline flex items-center gap-1 cursor-pointer"
-              >
-                + Add Chest Pain File <ChevronRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
+        <button
+          onClick={() => onNavigate('timeline')}
+          className="p-4 rounded-2xl bg-white border border-slate-200/90 hover:border-emerald-500 hover:shadow-xs transition-all text-left group cursor-pointer"
+        >
+          <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-800 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
+            <Clock className="w-4 h-4" />
           </div>
+          <p className="text-xs font-bold text-slate-900 group-hover:text-amber-800">History Timeline</p>
+          <p className="text-[10px] text-slate-500 mt-0.5">Longitudinal records & biomarker trajectory</p>
+        </button>
 
-        </div>
+        <button
+          onClick={() => onNavigate('ai-summary')}
+          className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50/60 border border-emerald-300 hover:border-emerald-600 hover:shadow-xs transition-all text-left group cursor-pointer"
+        >
+          <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform shadow-2xs">
+            <Sparkles className="w-4 h-4" />
+          </div>
+          <p className="text-xs font-bold text-emerald-950 group-hover:text-emerald-800">AI Clinical Summary</p>
+          <p className="text-[10px] text-emerald-800 mt-0.5">Condition summaries, Vaidya decisions & conflict flags</p>
+        </button>
       </div>
 
       {/* DEDICATED FOOD INTAKE & AHARA LOG BOX (FEEDS AI SUMMARIZATION) */}

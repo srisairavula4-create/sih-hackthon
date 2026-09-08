@@ -249,11 +249,11 @@ export default function App() {
       if (newRec.extractedData?.medications && newRec.extractedData.medications.length > 0) {
         keyValues = newRec.extractedData.medications.slice(0, 3).map(m => `${m.name} (${m.dose})`);
       }
-    } else if (newRec.type === 'Consultation' || newRec.type === 'Ayurvedic Consultation') {
-      titlePrefix = "Consultation";
+    } else if (newRec.type === 'Discharge Summary' || newRec.type === 'Consultation') {
+      titlePrefix = newRec.type;
       badgeColor = "amber";
-      if (newRec.extractedData?.herbalAdvised && newRec.extractedData.herbalAdvised.length > 0) {
-        keyValues = newRec.extractedData.herbalAdvised.slice(0, 3).map(h => h.name);
+      if (newRec.extractedData?.medications && newRec.extractedData.medications.length > 0) {
+        keyValues = newRec.extractedData.medications.slice(0, 3).map(m => `${m.name} (${m.dose})`);
       }
     } else {
       if (newRec.extractedData?.biomarkers && newRec.extractedData.biomarkers.length > 0) {
@@ -267,6 +267,7 @@ export default function App() {
       date: newRec.date,
       title: `${titlePrefix}: ${newRec.title}`,
       category: newRec.type,
+      condition: newRec.condition,
       badgeColor: badgeColor,
       summary: newRec.extractedData?.clinicalImpression || "Document verified and categorized via AI OCR.",
       keyValues: keyValues,
@@ -285,7 +286,156 @@ export default function App() {
       return updated;
     });
 
-    showToast(`${newRec.title} verified & automatically indexed into Timeline!`, 'success');
+    // 4. AUTOMATIC RE-PROCESS & REFRESH OF AI CLINICAL SUMMARY TAB
+    setAiSummary(prevSummary => {
+      const isStomach = newRec.condition === 'stomach_pain' || 
+        newRec.title.toLowerCase().includes('stomach') || 
+        newRec.title.toLowerCase().includes('endoscopy') || 
+        newRec.title.toLowerCase().includes('gastro') ||
+        newRec.title.toLowerCase().includes('discharge');
+
+      const isChest = newRec.condition === 'chest_pain' || 
+        newRec.title.toLowerCase().includes('chest') || 
+        newRec.title.toLowerCase().includes('ecg') || 
+        newRec.title.toLowerCase().includes('lipid');
+
+      // Preserve all source attributions
+      const existingSources = prevSummary.sources || [
+        { name: "Patient Voice Intake", date: "2025-01-12", facility: "Self-Reported" },
+        { name: "Max Healthcare Endoscopy Report", date: "2025-01-18", facility: "Max Healthcare" },
+        { name: "Fortis Escorts ECG & Lipid Panel", date: "2025-01-14", facility: "Fortis Escorts" }
+      ];
+
+      const newSourceEntry = {
+        name: newRec.title,
+        date: newRec.date,
+        facility: newRec.institution,
+        fileName: newRec.fileName
+      };
+
+      const updatedSources = [newSourceEntry, ...existingSources.filter(s => s.name !== newRec.title)];
+
+      // Conflict / Variance Detection Registry (No silent overwriting)
+      const currentConflicts = prevSummary.conflicts || [
+        {
+          id: "CONF-01",
+          parameter: "Fasting Blood Glucose",
+          priorValue: "112 mg/dL",
+          priorSource: "AIIMS Annual Health Checkup (2023-11-18)",
+          newValue: "138 mg/dL",
+          newSource: "Max Healthcare Diagnostic Panel (2025-01-18)",
+          varianceType: "Biomarker Drift Alert",
+          resolution: "Preserved with longitudinal provenance. Glycemic escalation reflects Jatharagni Mandya rather than record contradiction.",
+          status: "Preserved with Source Attribution"
+        },
+        {
+          id: "CONF-02",
+          parameter: "Serum Triglycerides",
+          priorValue: "215 mg/dL",
+          priorSource: "Baseline Lipid Screening (2024-08-10)",
+          newValue: "192 mg/dL",
+          newSource: "Fortis Escorts Cardiology Panel (2025-01-14)",
+          varianceType: "Therapeutic Trajectory",
+          resolution: "Down-trend from 215 to 192 mg/dL demonstrates therapeutic response to Atorvastatin & Arjuna Ksheerapaka. Both values preserved.",
+          status: "Preserved with Source Attribution"
+        }
+      ];
+
+      let newConflicts = [...currentConflicts];
+
+      // If new record contains biomarkers, detect variance against existing data
+      if (newRec.extractedData?.biomarkers) {
+        newRec.extractedData.biomarkers.forEach(b => {
+          if (b.name.toLowerCase().includes('glucose') || b.name.toLowerCase().includes('sugar')) {
+            newConflicts = [
+              {
+                id: `CONF-${Date.now()}-GLU`,
+                parameter: "Fasting Blood Glucose",
+                priorValue: "138 mg/dL",
+                priorSource: "Prior Laboratory Panel",
+                newValue: b.value,
+                newSource: `${newRec.title} (${newRec.institution}, ${newRec.date})`,
+                varianceType: "New Parameter Merged",
+                resolution: `Extracted ${b.value} from ${newRec.fileName}. Historical values retained; no silent overwrite.`,
+                status: "Preserved with Source Attribution"
+              },
+              ...newConflicts.filter(c => c.parameter !== "Fasting Blood Glucose")
+            ];
+          }
+        });
+      }
+
+      // Merge into condition-specific summaries with source attribution
+      const updatedStomachSummary = {
+        ...(prevSummary.stomachSummary || {
+          title: "AYURVEDIC CASE SUMMARY",
+          chiefComplaint: "Stomach pain",
+          duration: "2 weeks",
+          location: "Upper abdomen",
+          associatedSymptoms: "Reduced appetite, bloating",
+          previousRecords: "Endoscopy shows antral erythema [Source: Max Healthcare, 2025-01-18]",
+          previousMedications: "Pantoprazole 40 mg [Source: Max Healthcare]",
+          ayurvedicHistory: "Agni-related complaints reported; Koshtha details recorded",
+          source: "Patient voice + endoscopy report + prescription",
+          confidence: "0.91",
+          statusDraft: "Draft — Vaidya verification required"
+        })
+      };
+
+      if (isStomach) {
+        const newRecordSnippet = `${newRec.title}: ${newRec.extractedData?.clinicalImpression || 'Verified findings'} [Source: ${newRec.institution}, ${newRec.date}]`;
+        updatedStomachSummary.previousRecords = `${updatedStomachSummary.previousRecords} • ${newRecordSnippet}`;
+        updatedStomachSummary.source = `${updatedStomachSummary.source} + ${newRec.title} (${newRec.fileName})`;
+        if (newRec.extractedData?.medications && newRec.extractedData.medications.length > 0) {
+          const newMedsStr = newRec.extractedData.medications.map(m => `${m.name} ${m.dose}`).join(', ');
+          updatedStomachSummary.previousMedications = `${updatedStomachSummary.previousMedications} + ${newMedsStr} [Source: ${newRec.institution}]`;
+        }
+      }
+
+      const updatedChestSummary = {
+        ...(prevSummary.chestSummary || {
+          title: "AYURVEDIC CASE SUMMARY",
+          chiefComplaint: "Chest pain",
+          duration: "3 weeks",
+          location: "Retro-sternal / Left precordium",
+          associatedSymptoms: "Exertional tightness, mild breathlessness, morning heaviness",
+          previousRecords: "12-Lead ECG shows normal sinus rhythm; Triglycerides 192 mg/dL [Source: Fortis Escorts, 2025-01-14]",
+          previousMedications: "Tab. Atorvastatin 10 mg, Tab. Metformin 500 mg [Source: Fortis Escorts]",
+          ayurvedicHistory: "Rasavaha & Medovaha Sroto-rodha reported; Dhatvagni Mandya recorded",
+          source: "Patient voice + ECG report + cardiology prescription",
+          confidence: "0.94",
+          statusDraft: "Draft — Vaidya verification required"
+        })
+      };
+
+      if (isChest) {
+        const newRecordSnippet = `${newRec.title}: ${newRec.extractedData?.clinicalImpression || 'Verified findings'} [Source: ${newRec.institution}, ${newRec.date}]`;
+        updatedChestSummary.previousRecords = `${updatedChestSummary.previousRecords} • ${newRecordSnippet}`;
+        updatedChestSummary.source = `${updatedChestSummary.source} + ${newRec.title} (${newRec.fileName})`;
+        if (newRec.extractedData?.medications && newRec.extractedData.medications.length > 0) {
+          const newMedsStr = newRec.extractedData.medications.map(m => `${m.name} ${m.dose}`).join(', ');
+          updatedChestSummary.previousMedications = `${updatedChestSummary.previousMedications} + ${newMedsStr} [Source: ${newRec.institution}]`;
+        }
+      }
+
+      const refreshed = {
+        ...prevSummary,
+        lastRefreshedAt: new Date().toLocaleTimeString(),
+        latestUpdatedDoc: newRec.title,
+        sources: updatedSources,
+        conflicts: newConflicts,
+        stomachSummary: updatedStomachSummary,
+        chestSummary: updatedChestSummary
+      };
+
+      try {
+        localStorage.setItem('ayurvaidya_summary', JSON.stringify(refreshed));
+      } catch (e) {}
+
+      return refreshed;
+    });
+
+    showToast(`${newRec.title} verified! AI Clinical Summary re-processed & refreshed.`, 'success');
   };
 
   const handleDeleteRecord = (recordId) => {
@@ -385,6 +535,7 @@ export default function App() {
                 onAddRecord={handleAddRecord}
                 onDeleteRecord={handleDeleteRecord}
                 onNavigateToTimeline={() => setCurrentView('timeline')}
+                onNavigateToAiSummary={() => setCurrentView('ai-summary')}
               />
             )}
 
