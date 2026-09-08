@@ -21,7 +21,6 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { MissingDocBanner } from '../components/NotificationToast';
-import { AyurvedicCaseSummaryCard } from '../components/AyurvedicCaseSummaryCard';
 
 export const DashboardView = ({ 
   patient, 
@@ -162,10 +161,10 @@ export const DashboardView = ({
           <div>
             <h2 className="text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
               <Activity className="w-5 h-5 text-emerald-600" />
-              Condition-Wise Medical Intelligence & AI Summarization
+              Condition-Wise Medical History & Clinical Records
             </h2>
             <p className="text-xs text-slate-500">
-              AI organizes reports and prescriptions by respective health condition: Stomach Pain on one side and Chest Pain on the other side.
+              Reports and prescriptions organized strictly by respective condition: Stomach Pain on one side and Chest Pain on the other side. View complete AI case summaries in the AI Clinical Summary tab.
             </p>
           </div>
 
@@ -208,8 +207,23 @@ export const DashboardView = ({
                 </span>
               </div>
 
-              {/* EXACT STRUCTURED AYURVEDIC CASE SUMMARY (STOMACH PAIN) */}
-              <AyurvedicCaseSummaryCard conditionType="stomach_pain" />
+              {/* Link to Dedicated AI Clinical Summary Tab */}
+              <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/80 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-700 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs font-bold text-amber-950">AI Case Summary Available</p>
+                    <p className="text-[11px] text-amber-800">Udara Shoola & Amlapitta diagnosis in AI Clinical Summary</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => onNavigate('ai-summary')}
+                  className="px-3 py-1.5 bg-amber-800 hover:bg-amber-900 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer flex-shrink-0"
+                >
+                  <span>Open AI Clinical Summary</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
 
               {/* Respective Stomach Pain Reports & Prescriptions */}
               <div className="space-y-2.5">
@@ -298,8 +312,23 @@ export const DashboardView = ({
                 </span>
               </div>
 
-              {/* EXACT STRUCTURED AYURVEDIC CASE SUMMARY (CHEST PAIN) */}
-              <AyurvedicCaseSummaryCard conditionType="chest_pain" />
+              {/* Link to Dedicated AI Clinical Summary Tab */}
+              <div className="p-3.5 rounded-2xl bg-teal-50/70 border border-teal-200/80 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-teal-700 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs font-bold text-teal-950">AI Case Summary Available</p>
+                    <p className="text-[11px] text-teal-800">Hrid-Shoola & lipid analysis in AI Clinical Summary</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => onNavigate('ai-summary')}
+                  className="px-3 py-1.5 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer flex-shrink-0"
+                >
+                  <span>Open AI Clinical Summary</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
 
               {/* Respective Chest Pain Reports & Prescriptions */}
               <div className="space-y-2.5">
