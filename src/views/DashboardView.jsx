@@ -21,6 +21,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { MissingDocBanner } from '../components/NotificationToast';
+import { AyurvedicCaseSummaryCard } from '../components/AyurvedicCaseSummaryCard';
 
 export const DashboardView = ({ 
   patient, 
@@ -207,35 +208,8 @@ export const DashboardView = ({
                 </span>
               </div>
 
-              {/* AI CLINICAL SUMMARY FOR STOMACH PAIN */}
-              <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-50/70 via-orange-50/40 to-white border border-amber-200/80 space-y-2.5 shadow-2xs">
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 text-xs font-bold text-amber-900 uppercase tracking-wider">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                    AI Summary for Stomach Pain
-                  </span>
-                  <span className="text-[10px] font-semibold text-amber-700 bg-white px-2 py-0.5 rounded border border-amber-200">
-                    Pitta-Vataja Shoola
-                  </span>
-                </div>
-
-                <div className="space-y-1 text-xs text-slate-700">
-                  <p>
-                    <strong className="text-slate-900">Diagnosis:</strong> Functional Dyspepsia & Amlapitta with Pitta-Vataja Udara Shoola.
-                  </p>
-                  <p>
-                    <strong className="text-slate-900">Etiology & Root Cause:</strong> Jatharagni Mandya (sluggish digestive fire) and delayed gastric emptying with mucosal hyperacidity from irregular meal timings and cold drinks.
-                  </p>
-                  <p className="text-slate-600 leading-relaxed pt-1">
-                    <strong className="text-slate-800">AI Cross-Record Synthesis:</strong> Upper GI endoscopy confirmed antral erythema without peptic ulceration. Contemporary Pantoprazole 40mg is combined with Sukumaram Kashayam and Avipattikar Churna, successfully neutralizing gastric acid and clearing Kosthagata Ama.
-                  </p>
-                </div>
-
-                <div className="pt-2 border-t border-amber-200/60 flex items-center justify-between text-[11px] text-amber-900 font-medium">
-                  <span>Ahara: Cumin Takra, avoid curd</span>
-                  <span>Agni: Deepana-Pachana Active</span>
-                </div>
-              </div>
+              {/* EXACT STRUCTURED AYURVEDIC CASE SUMMARY (STOMACH PAIN) */}
+              <AyurvedicCaseSummaryCard conditionType="stomach_pain" />
 
               {/* Respective Stomach Pain Reports & Prescriptions */}
               <div className="space-y-2.5">
@@ -324,35 +298,8 @@ export const DashboardView = ({
                 </span>
               </div>
 
-              {/* AI CLINICAL SUMMARY FOR CHEST PAIN */}
-              <div className="p-4 rounded-2xl bg-gradient-to-br from-teal-50/70 via-emerald-50/40 to-white border border-teal-200/80 space-y-2.5 shadow-2xs">
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 text-xs font-bold text-teal-900 uppercase tracking-wider">
-                    <Sparkles className="w-3.5 h-3.5 text-teal-600" />
-                    AI Summary for Chest Pain
-                  </span>
-                  <span className="text-[10px] font-semibold text-teal-700 bg-white px-2 py-0.5 rounded border border-teal-200">
-                    Hridya Srotorodha
-                  </span>
-                </div>
-
-                <div className="space-y-1 text-xs text-slate-700">
-                  <p>
-                    <strong className="text-slate-900">Diagnosis:</strong> Kaphaja-Vataja Hrid-Shoola with Medovaha Srotorodha.
-                  </p>
-                  <p>
-                    <strong className="text-slate-900">Etiology & Root Cause:</strong> Atherogenic dyslipidemia (Triglycerides 192 mg/dL) causing arterial micro-channel congestion. 12-lead ECG confirms normal sinus rhythm without acute ischemic damage.
-                  </p>
-                  <p className="text-slate-600 leading-relaxed pt-1">
-                    <strong className="text-slate-800">AI Cross-Record Synthesis:</strong> Cardiology protocol (Atorvastatin 10mg + Metformin 500mg) is co-prescribed with classical cardioprotective Arjuna Ksheerapaka. No adverse herb-drug interactions found; myocardial tone is well maintained.
-                  </p>
-                </div>
-
-                <div className="pt-2 border-t border-teal-200/60 flex items-center justify-between text-[11px] text-teal-900 font-medium">
-                  <span>Vihara: 30-min brisk walk daily</span>
-                  <span>Herb: Arjuna Ksheerapaka BD</span>
-                </div>
-              </div>
+              {/* EXACT STRUCTURED AYURVEDIC CASE SUMMARY (CHEST PAIN) */}
+              <AyurvedicCaseSummaryCard conditionType="chest_pain" />
 
               {/* Respective Chest Pain Reports & Prescriptions */}
               <div className="space-y-2.5">

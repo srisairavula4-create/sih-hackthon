@@ -1,3 +1,4 @@
+import { AyurvedicCaseSummaryCard } from '../components/AyurvedicCaseSummaryCard';
 import React, { useState } from 'react';
 import { 
   Sparkles, 
@@ -100,6 +101,28 @@ export const AiSummaryView = ({
         <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
           {aiSummary.synthesisOverview}
         </p>
+      </div>
+
+      {/* DUAL CONDITION STRUCTURED AYURVEDIC CASE SUMMARIES WITH VAIDYA DECISION MODULE */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <span className="p-1.5 rounded-lg bg-emerald-100 text-emerald-700">
+            <Sparkles className="w-4 h-4" />
+          </span>
+          <div>
+            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+              Ayurvedic Case Summaries & Vaidya Decision Station
+            </h2>
+            <p className="text-xs text-slate-500">
+              Structured clinical case intake with interactive differential diagnosis confirmation
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <AyurvedicCaseSummaryCard conditionType="stomach_pain" />
+          <AyurvedicCaseSummaryCard conditionType="chest_pain" />
+        </div>
       </div>
 
       {/* SECTION 1: ROGA NIDANA (AYURVEDIC ETIOPATHOGENESIS) */}

@@ -1,3 +1,4 @@
+import { AyurvedicCaseSummaryCard } from '../components/AyurvedicCaseSummaryCard';
 import React, { useState } from 'react';
 import { 
   Clock, 
@@ -194,53 +195,22 @@ export const TimelineView = ({
         </div>
       </div>
 
-      {/* 1. SIDE-BY-SIDE AI CLINICAL SUMMARY (STOMACH PAIN ON 1 SIDE, CHEST PAIN ON 1 SIDE) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        
-        {/* SIDE 1: STOMACH PAIN AI SUMMARY */}
-        <div className="bg-gradient-to-br from-amber-50/80 via-orange-50/40 to-white rounded-3xl border-2 border-amber-200 p-5 shadow-xs space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
-              <span>🩺</span>
-              Stomach Pain AI Synthesis ({stomachEvents.length} Files)
-            </span>
-            <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-md">
-              Amlapitta & Shoola
-            </span>
-          </div>
-
-          <p className="text-xs text-slate-700 leading-relaxed">
-            AI synthesis across endoscopy reports and gastro prescriptions shows <strong>Pitta-Vataja Udara Shoola</strong> caused by Jatharagni Mandya. Mild antral gastritis is effectively controlled with Pantoprazole 40mg and Sukumaram Kashayam, relieving Kosthagata Ama.
-          </p>
-
-          <div className="pt-2 border-t border-amber-200/60 flex items-center justify-between text-[11px] text-amber-900 font-mono">
-            <span>Scan: Antral Erythema</span>
-            <span>Rx: Sukumaram + Pantoprazole</span>
-          </div>
+      {/* 1. DUAL CONDITION AYURVEDIC CASE SUMMARIES WITH VAIDYA DECISIONS */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+            <Sparkles className="w-4 h-4 text-emerald-600" />
+            Condition-Wise Ayurvedic Case Summaries & Vaidya Decisions
+          </h3>
+          <span className="text-[10px] text-slate-500 font-mono">
+            Stomach Pain (Left) • Chest Pain (Right)
+          </span>
         </div>
 
-        {/* SIDE 2: CHEST PAIN AI SUMMARY */}
-        <div className="bg-gradient-to-br from-teal-50/80 via-emerald-50/40 to-white rounded-3xl border-2 border-teal-200 p-5 shadow-xs space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-teal-900 uppercase tracking-wider flex items-center gap-1.5">
-              <span>❤️</span>
-              Chest Pain AI Synthesis ({chestEvents.length} Files)
-            </span>
-            <span className="text-[10px] font-bold text-teal-800 bg-teal-100 px-2 py-0.5 rounded-md">
-              Hrid-Shoola / Lipids
-            </span>
-          </div>
-
-          <p className="text-xs text-slate-700 leading-relaxed">
-            AI synthesis across ECG reports and cardiology prescriptions confirms <strong>Kaphaja-Vataja Hrid-Shoola</strong> linked to elevated Triglycerides (192 mg/dL). Normal ECG rules out acute ischemic injury; Atorvastatin 10mg + Arjuna Ksheerapaka provides safe cardioprotective synergy.
-          </p>
-
-          <div className="pt-2 border-t border-teal-200/60 flex items-center justify-between text-[11px] text-teal-900 font-mono">
-            <span>ECG: Normal Sinus</span>
-            <span>Rx: Atorvastatin + Arjuna</span>
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <AyurvedicCaseSummaryCard conditionType="stomach_pain" />
+          <AyurvedicCaseSummaryCard conditionType="chest_pain" />
         </div>
-
       </div>
 
       {/* 2. INTERACTIVE BIOMARKER GRAPH */}
