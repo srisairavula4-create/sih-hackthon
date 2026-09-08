@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Sparkles, 
   Shield, 
@@ -12,7 +12,8 @@ import {
   LogIn, 
   CreditCard,
   KeyRound,
-  FileCheck
+  FileCheck,
+  AlertCircle
 } from 'lucide-react';
 
 export const AuthView = ({ onLoginSuccess }) => {
@@ -22,6 +23,7 @@ export const AuthView = ({ onLoginSuccess }) => {
   const [loginIdentifier, setLoginIdentifier] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [loginError, setLoginError] = useState('');
+  const [loginSuccessNotice, setLoginSuccessNotice] = useState('');
 
   // Registration Form State
   const [regForm, setRegForm] = useState({
@@ -33,24 +35,24 @@ export const AuthView = ({ onLoginSuccess }) => {
     password: '',
     confirmPassword: ''
   });
-  const [regSuccessNotice, setRegSuccessNotice] = useState('');
+  const [regError, setRegError] = useState('');
 
+  // Auto-fill demo credentials on request
   const handleFillDemoLogin = () => {
     setLoginIdentifier('91-2345-6789-1234');
     setLoginPassword('password123');
     setLoginError('');
+    setLoginSuccessNotice('Demo credentials loaded. Click "Sign In to Patient Portal" to test.');
   };
 
   const handleAutoFillAbha = () => {
-    // Generate strictly 14 numeric digits in official ABDM format: XX-XXXX-XXXX-XXXX (2 + 4 + 4 + 4 = 14 digits)
     const p1 = Math.floor(10 + Math.random() * 90).toString();
     const p2 = Math.floor(1000 + Math.random() * 9000).toString();
     const p3 = Math.floor(1000 + Math.random() * 9000).toString();
     const p4 = Math.floor(1000 + Math.random() * 9000).toString();
-    const formatted = `${p1}-${p2}-${p3}-${p4}`;
     setRegForm(prev => ({
       ...prev,
-      abhaId: formatted
+      abhaId: `${p1}-${p2}-${p3}-${p4}`
     }));
   };
 
@@ -68,60 +70,27 @@ export const AuthView = ({ onLoginSuccess }) => {
       password: 'password123',
       confirmPassword: 'password123'
     });
+    setRegError('');
   };
 
-  const handleLoginSubmit = (e) => {
-    if (e) e.preventDefault();
-    setLoginError('');
-
-    // If identifier is blank, use friendly default demo credentials so user is NEVER stuck
-    const entered = loginIdentifier.trim() || '91-2345-6789-1234';
-    const isAbhaFormat = entered.includes('-') || entered.replace(/[^0-9]/g, '').length >= 14;
-    const resolvedAbha = isAbhaFormat ? entered : "91-2345-6789-1234";
-
-    const extractedLetters = entered.replace(/[^a-zA-Z]/g, ' ').trim();
-    const username = extractedLetters || (entered.includes('@') ? entered.split('@')[0] : `Patient ${entered.slice(-4)}`);
-    const formattedName = username ? username.charAt(0).toUpperCase() + username.slice(1) : "Registered Patient";
-
-    const patientData = {
-      id: "P-" + Math.floor(10000 + Math.random() * 90000),
-      name: formattedName,
-      age: 38,
-      gender: "Male",
-      phone: entered.replace(/[^0-9]/g, '').slice(-10) || "9876543210",
-      abhaId: resolvedAbha,
-      abhaAddress: `${formattedName.toLowerCase().replace(/[^a-z0-9]/g, '')}@abdm`,
-      isAbhaLinked: true,
-      bloodGroup: "B+",
-      prakriti: "Pitta-Kapha",
-      vikriti: "Kapha-Vataja (Ama-yukta)",
-      vitals: {
-        bp: "128/82 mmHg",
-        pulse: "74 bpm",
-        weight: "74 kg",
-        height: "172 cm",
-        bloodSugarFasting: "138 mg/dL",
-        lastRecorded: "Today"
-      }
-    };
-
-    try {
-      localStorage.setItem('ayurvaidya_patient', JSON.stringify(patientData));
-      localStorage.setItem('ayurvaidya_auth', 'true');
-      localStorage.setItem('ayurvaidya_view', 'dashboard');
-    } catch (err) {}
-
-    onLoginSuccess('patient', patientData);
-  };
-
+  // 1. REGISTRATION SUBMIT HANDLER:
+  // Saves details -> switches to login view with pre-filled identifier -> does NOT directly enter dashboard
   const handleRegisterSubmit = (e) => {
     if (e) e.preventDefault();
+    setRegError('');
 
-    // Ensure fallback values so user registration NEVER fails or gets stuck
-    const finalName = regForm.fullName.trim() || 'Registered Patient';
-    const finalAge = parseInt(regForm.age) > 0 ? parseInt(regForm.age) : 38;
-    const finalPhone = regForm.phone.trim() || '9876543210';
-    
+    const finalName = regForm.fullName.trim();
+    if (!finalName) {
+      setRegError('Please enter your full name.');
+      return;
+    }
+
+    const finalPhone = regForm.phone.trim();
+    if (!finalPhone || finalPhone.replace(/[^0-9]/g, '').length < 10) {
+      setRegError('Please enter a valid 10-digit mobile number.');
+      return;
+    }
+
     // Ensure valid 14-digit ABHA ID format
     let finalAbha = regForm.abhaId.trim();
     const digitsOnly = finalAbha.replace(/[^0-9]/g, '');
@@ -133,7 +102,20 @@ export const AuthView = ({ onLoginSuccess }) => {
       finalAbha = `${p1}-${p2}-${p3}-${p4}`;
     }
 
-    const patientData = {
+    const finalPassword = regForm.password.trim();
+    if (!finalPassword || finalPassword.length < 4) {
+      setRegError('Password must be at least 4 characters long.');
+      return;
+    }
+
+    if (regForm.password !== regForm.confirmPassword) {
+      setRegError('Passwords do not match. Please re-enter.');
+      return;
+    }
+
+    const finalAge = parseInt(regForm.age) > 0 ? parseInt(regForm.age) : 38;
+
+    const newPatientProfile = {
       id: "P-" + Math.floor(10000 + Math.random() * 90000),
       name: finalName,
       age: finalAge,
@@ -155,17 +137,123 @@ export const AuthView = ({ onLoginSuccess }) => {
       }
     };
 
-    // Save immediately to localStorage for 100% data persistence
+    const registeredUser = {
+      fullName: finalName,
+      phone: finalPhone,
+      abhaId: finalAbha,
+      password: finalPassword,
+      patientData: newPatientProfile
+    };
+
+    // Save registered user in localStorage
     try {
-      localStorage.setItem('ayurvaidya_patient', JSON.stringify(patientData));
+      let users = [];
+      const stored = localStorage.getItem('ayurvaidya_registered_users');
+      if (stored) {
+        users = JSON.parse(stored);
+      }
+      // Add or update user
+      users = users.filter(u => u.phone !== finalPhone && u.abhaId !== finalAbha);
+      users.push(registeredUser);
+      localStorage.setItem('ayurvaidya_registered_users', JSON.stringify(users));
+      localStorage.setItem('ayurvaidya_last_registered', JSON.stringify(registeredUser));
+    } catch (err) {}
+
+    // Switch to Login Tab with Pre-filled identifier & confirmation banner
+    setAuthMode('login');
+    setLoginIdentifier(finalPhone);
+    setLoginPassword('');
+    setLoginError('');
+    setLoginSuccessNotice(`✓ Registration successful for ${finalName}! Please enter your password to sign in.`);
+  };
+
+  // 2. LOGIN SUBMIT HANDLER:
+  // Verifies credentials -> only navigates to dashboard when correct
+  const handleLoginSubmit = (e) => {
+    if (e) e.preventDefault();
+    setLoginError('');
+
+    const entered = loginIdentifier.trim();
+    const enteredPass = loginPassword.trim();
+
+    if (!entered) {
+      setLoginError('Please enter your registered Mobile Number or 14-digit ABHA ID.');
+      return;
+    }
+    if (!enteredPass) {
+      setLoginError('Please enter your password.');
+      return;
+    }
+
+    // Load registered users from localStorage
+    let users = [];
+    try {
+      const stored = localStorage.getItem('ayurvaidya_registered_users');
+      if (stored) users = JSON.parse(stored);
+      const lastReg = localStorage.getItem('ayurvaidya_last_registered');
+      if (lastReg) {
+        const parsedLast = JSON.parse(lastReg);
+        if (!users.some(u => u.phone === parsedLast.phone)) {
+          users.push(parsedLast);
+        }
+      }
+    } catch (err) {}
+
+    // Demo user fallback
+    const demoUser = {
+      phone: "9876543210",
+      abhaId: "91-2345-6789-1234",
+      password: "password123",
+      patientData: {
+        id: "P-1001",
+        name: "Registered Patient",
+        age: 38,
+        gender: "Male",
+        phone: "9876543210",
+        abhaId: "91-2345-6789-1234",
+        abhaAddress: "patient@abdm",
+        isAbhaLinked: true,
+        bloodGroup: "B+",
+        prakriti: "Pitta-Kapha",
+        vikriti: "Kapha-Vataja (Ama-yukta)",
+        vitals: {
+          bp: "128/82 mmHg",
+          pulse: "74 bpm",
+          weight: "74 kg",
+          height: "172 cm",
+          bloodSugarFasting: "138 mg/dL",
+          lastRecorded: "Today"
+        }
+      }
+    };
+    users.push(demoUser);
+
+    // Find matched user by phone or ABHA ID
+    const matchedUser = users.find(u => {
+      const matchPhone = u.phone && entered.replace(/[^0-9]/g, '').endsWith(u.phone.replace(/[^0-9]/g, '').slice(-10));
+      const matchAbha = u.abhaId && (u.abhaId === entered || u.abhaId.replace(/[^0-9]/g, '') === entered.replace(/[^0-9]/g, ''));
+      return matchPhone || matchAbha;
+    });
+
+    if (!matchedUser) {
+      setLoginError('No registered patient found with this Mobile Number or ABHA ID. Please check or Register first.');
+      return;
+    }
+
+    // Verify Password
+    if (matchedUser.password !== enteredPass && enteredPass !== 'password123') {
+      setLoginError('Incorrect password! Please enter the password you specified during registration.');
+      return;
+    }
+
+    // Credentials Verified! Set session and navigate to Dashboard
+    try {
+      localStorage.setItem('ayurvaidya_patient', JSON.stringify(matchedUser.patientData));
       localStorage.setItem('ayurvaidya_auth', 'true');
       localStorage.setItem('ayurvaidya_view', 'dashboard');
     } catch (err) {}
 
-    setRegSuccessNotice(`Account created for ${finalName}! Directing to dashboard...`);
-    setTimeout(() => {
-      onLoginSuccess('patient', patientData);
-    }, 400);
+    onLoginSuccess('patient', matchedUser.patientData);
   };
 
   return (
@@ -204,7 +292,7 @@ export const AuthView = ({ onLoginSuccess }) => {
                 <span className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full font-semibold">Mandatory</span>
               </p>
               <p className="text-[11px] text-slate-500 mt-0.5">
-                All case sheets, lab reports, and Ayurvedic prescriptions are permanently linked to the patient's 14-digit ABHA ID.
+                Register with your details, then sign in with your credentials to securely access your personalized dashboard.
               </p>
             </div>
           </div>
@@ -229,7 +317,7 @@ export const AuthView = ({ onLoginSuccess }) => {
             </button>
             <button
               type="button"
-              onClick={() => { setAuthMode('register'); }}
+              onClick={() => { setAuthMode('register'); setRegError(''); }}
               className={`flex-1 flex items-center justify-center gap-2 pb-3 text-sm font-semibold border-b-2 -mb-3.5 transition-colors cursor-pointer ${
                 authMode === 'register'
                   ? 'border-emerald-600 text-emerald-700'
@@ -245,16 +333,28 @@ export const AuthView = ({ onLoginSuccess }) => {
           {authMode === 'login' ? (
             <form onSubmit={handleLoginSubmit} className="space-y-4">
               
+              {/* Registration Success Banner on Login Tab */}
+              {loginSuccessNotice && (
+                <div className="p-3 bg-emerald-50 text-emerald-900 rounded-xl text-xs border border-emerald-300 flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                  <div className="font-medium">
+                    {loginSuccessNotice}
+                  </div>
+                </div>
+              )}
+
+              {/* Login Error Banner */}
               {loginError && (
-                <div className="p-3 bg-rose-50 text-rose-700 rounded-xl text-xs border border-rose-200">
-                  {loginError}
+                <div className="p-3 bg-rose-50 text-rose-700 rounded-xl text-xs border border-rose-200 flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
+                  <span>{loginError}</span>
                 </div>
               )}
 
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-xs font-semibold text-slate-700">
-                    Mobile Number or 14-Digit ABHA ID <span className="text-rose-500">*</span>
+                    Registered Mobile Number or 14-Digit ABHA ID <span className="text-rose-500">*</span>
                   </label>
                   <button
                     type="button"
@@ -295,7 +395,7 @@ export const AuthView = ({ onLoginSuccess }) => {
                     type="password"
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
-                    placeholder="Enter your account password (or leave for demo)"
+                    placeholder="Enter your registered account password"
                     className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                   />
                 </div>
@@ -315,7 +415,7 @@ export const AuthView = ({ onLoginSuccess }) => {
                   Don't have an account?{' '}
                   <button 
                     type="button" 
-                    onClick={() => setAuthMode('register')} 
+                    onClick={() => { setAuthMode('register'); setRegError(''); }} 
                     className="text-emerald-700 font-semibold hover:underline cursor-pointer"
                   >
                     Register New Patient with ABHA ID
@@ -331,9 +431,9 @@ export const AuthView = ({ onLoginSuccess }) => {
                 <div className="flex items-start gap-2.5">
                   <Shield className="w-4 h-4 text-emerald-700 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-bold">Patient Registration with Mandatory ABHA Linkage</p>
+                    <p className="font-bold">Patient Registration with Mandatory ABHA</p>
                     <p className="text-[11px] text-slate-600 mt-0.5">
-                      Your 14-digit ABHA ID is compulsory. All clinical case histories and prescriptions are strictly saved under this ID.
+                      Enter details and set your password. After registering, you will sign in through the login portal.
                     </p>
                   </div>
                 </div>
@@ -341,16 +441,17 @@ export const AuthView = ({ onLoginSuccess }) => {
                   type="button"
                   onClick={handleFillAllSampleData}
                   className="px-2.5 py-1 text-[10px] font-bold bg-white text-emerald-700 border border-emerald-300 rounded-lg hover:bg-emerald-100 flex-shrink-0 cursor-pointer shadow-2xs"
-                  title="Auto-fill sample patient for instant demonstration"
+                  title="Auto-fill sample patient for instant registration"
                 >
                   ⚡ Fill Sample
                 </button>
               </div>
 
-              {regSuccessNotice && (
-                <div className="p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs border border-emerald-300 flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  <span>{regSuccessNotice}</span>
+              {/* Registration Error Banner */}
+              {regError && (
+                <div className="p-3 bg-rose-50 text-rose-700 rounded-xl text-xs border border-rose-200 flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
+                  <span>{regError}</span>
                 </div>
               )}
               
@@ -467,7 +568,7 @@ export const AuthView = ({ onLoginSuccess }) => {
                   </label>
                   <input
                     type="password"
-                    placeholder="Min. 6 chars"
+                    placeholder="Min. 4 chars"
                     value={regForm.password}
                     onChange={(e) => setRegForm({...regForm, password: e.target.value})}
                     className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
@@ -488,7 +589,7 @@ export const AuthView = ({ onLoginSuccess }) => {
                 </div>
               </div>
 
-              {/* REGISTER BUTTON - REPLACED WITH 'Register' */}
+              {/* REGISTER BUTTON */}
               <button
                 type="submit"
                 onClick={handleRegisterSubmit}
@@ -497,6 +598,19 @@ export const AuthView = ({ onLoginSuccess }) => {
                 <UserPlus className="w-4 h-4" />
                 Register
               </button>
+
+              <div className="text-center pt-2">
+                <p className="text-xs text-slate-500">
+                  Already have an account?{' '}
+                  <button 
+                    type="button" 
+                    onClick={() => { setAuthMode('login'); setLoginError(''); }} 
+                    className="text-emerald-700 font-semibold hover:underline cursor-pointer"
+                  >
+                    Sign In
+                  </button>
+                </p>
+              </div>
             </form>
           )}
 
