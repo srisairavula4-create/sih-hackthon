@@ -42,9 +42,12 @@ export const AuthView = ({ onLoginSuccess }) => {
   };
 
   const handleAutoFillAbha = () => {
-    // Generate a realistic 14-digit ABHA ID
-    const random10 = Math.floor(1000000000 + Math.random() * 9000000000).toString();
-    const formatted = `91-${random10.slice(0, 4)}-${random10.slice(4, 8)}-${random10.slice(8, 12) || '1234'}`;
+    // Generate strictly 14 numeric digits in official ABDM format: XX-XXXX-XXXX-XXXX (2 + 4 + 4 + 4 = 14 digits)
+    const p1 = Math.floor(10 + Math.random() * 90).toString(); // 2 digits
+    const p2 = Math.floor(1000 + Math.random() * 9000).toString(); // 4 digits
+    const p3 = Math.floor(1000 + Math.random() * 9000).toString(); // 4 digits
+    const p4 = Math.floor(1000 + Math.random() * 9000).toString(); // 4 digits
+    const formatted = `${p1}-${p2}-${p3}-${p4}`; // Exactly 14 digits!
     setRegForm(prev => ({
       ...prev,
       abhaId: formatted
@@ -400,16 +403,37 @@ export const AuthView = ({ onLoginSuccess }) => {
                     <span>⚡ Auto-Generate Valid ABHA ID</span>
                   </button>
                 </div>
-                <input
-                  type="text"
-                  placeholder="e.g. 91-2345-6789-1234 (14 digits)"
-                  value={regForm.abhaId}
-                  onChange={(e) => setRegForm({...regForm, abhaId: e.target.value})}
-                  className="w-full px-3.5 py-2 text-sm bg-white border border-emerald-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-600 font-mono font-semibold text-slate-800"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    maxLength={17}
+                    placeholder="e.g. 91-2345-6789-1234 (14 digits)"
+                    value={regForm.abhaId}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setRegForm({...regForm, abhaId: val});
+                      if (regErrors.abhaId && val.replace(/[^0-9]/g, '').length === 14) {
+                        setRegErrors({...regErrors, abhaId: ''});
+                      }
+                    }}
+                    className="w-full pl-3.5 pr-28 py-2 text-sm bg-white border border-emerald-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-600 font-mono font-semibold text-slate-800"
+                  />
+                  <div className="absolute right-2.5 top-2 pointer-events-none">
+                    {regForm.abhaId.replace(/[^0-9]/g, '').length === 14 ? (
+                      <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded-md flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                        14 Digits Valid
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
+                        {regForm.abhaId.replace(/[^0-9]/g, '').length}/14 digits
+                      </span>
+                    )}
+                  </div>
+                </div>
                 {regErrors.abhaId && <p className="text-[11px] text-rose-600 font-semibold mt-1">{regErrors.abhaId}</p>}
                 <p className="text-[10px] text-slate-500 mt-1">
-                  Mandatory under Ayushman Bharat Digital Mission (ABDM). All patient records are strictly linked through this ID.
+                  Mandatory under Ayushman Bharat Digital Mission (ABDM). Format: XX-XXXX-XXXX-XXXX (Strictly 14 digits).
                 </p>
               </div>
 
