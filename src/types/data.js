@@ -185,36 +185,52 @@ export const INITIAL_TIMELINE = [
 ];
 
 export const INITIAL_CASE_INTAKE = {
+  // PART 1: GENERAL CASE HISTORY
   chiefComplaint: "Recurrent upper abdominal burning discomfort (Amlapitta/Udara Shoola) after meals, accompanied by occasional exertional chest tightness (Hrid-Shoola) and persistent morning lethargy.",
+  hpi: "Onset 6 months ago with intermittent epigastric burning after spicy meals, escalating over the past 3 weeks with exertional retro-sternal heaviness. Relieved partially by antacids, aggravated by irregular eating hours, late dinners, and mental stress.",
   duration: "6 Months",
   severity: "Moderate",
   pastHistory: "Mild gastritis documented on endoscopy in Jan 2025; dyslipidemia noted on cardiovascular screen.",
   currentMedications: "Tab. Pantoprazole 40mg; Sukumaram Kashayam; Tab. Atorvastatin 10mg; Arjuna Ksheerapaka.",
-  allergies: "No known drug allergies.",
-  familyHistory: "Father had cardiovascular disease; Mother had hyperacidity and gastritis.",
+  allergies: "No known drug allergies (NKDA). Intolerance to excessive chili and sour foods.",
+  familyHistory: "Father had cardiovascular disease (CAD); Mother had hyperacidity and gastritis.",
+  personalHistory: "Sedentary software developer, 9-hour desk work, non-smoker, non-alcoholic. Chronic occupational stress and irregular sleep pattern.",
+  
+  // PART 2: AYUSH / AYURVEDIC HISTORY
   dashavidha: {
     prakriti: "Pitta-Kapha",
     vikriti: "Pitta-Vataja in Kostha (Stomach) with Kapha Srotorodha in Hridya",
-    sara: "Madhyama Sara",
-    samhanana: "Madhyama Samhanana",
-    pramana: "Pramana Yukta",
-    satmya: "Mixed dietary habit",
-    satva: "Madhyama Satva",
-    aharaShakti: "Madhyama Abhyavaharana, Avara Jarana Shakti",
-    vyayamaShakti: "Avara Vyayama Shakti",
-    vaya: "38 Years"
+    sara: "Madhyama Sara (Moderate tissue excellence)",
+    samhanana: "Madhyama Samhanana (Average body build)",
+    pramana: "Pramana Yukta (Normal anthropometric proportions)",
+    satmya: "Mixed dietary habit; accustomed to wheat, rice, and dairy",
+    satva: "Madhyama Satva (Moderate psychological fortitude)",
+    aharaShakti: "Madhyama Abhyavaharana, Avara Jarana Shakti (Slow digestion)",
+    vyayamaShakti: "Avara Vyayama Shakti (Low physical endurance)",
+    vaya: "38 Years (Madhyama Vaya)"
   },
   aharaVihara: {
-    agniType: "Vishamagni with Mandagni tendencies",
-    koshthaType: "Madhyama Koshtha with occasional hyperacidity",
+    agniType: "Vishamagni with Mandagni tendencies (Variable & sluggish digestive fire)",
+    koshthaType: "Madhyama Koshtha with occasional hyperacidity and dry stool tendencies",
     dietaryPreference: "Vegetarian with frequent curd, tea, and fried snacks",
     mealTiming: "Irregular; late dinners past 10:00 PM",
     viruddhaAhara: "Cold water with meals, sour curd with fried items",
-    waterIntake: "2.5 Liters / day",
-    nidraPattern: "6 hours per night with light morning awakenings",
-    vyayamaHabit: "Minimal daily exercise",
-    manasikaBhavas: "Work-related mental stress (Chinta)"
+    waterIntake: "2.5 Liters / day (chilled water habit)",
+    nidraPattern: "6 hours per night with light morning awakenings; post-lunch drowsiness (Diva-swapna)",
+    vyayamaHabit: "Minimal daily exercise (< 15 mins walking)",
+    manasikaBhavas: "Work-related mental stress (Chinta & Krodha)"
   },
+  ashtavidha: {
+    nadi: "74 bpm, Mandagati, Kapha-Vata dominance with Pitta surge post-meals",
+    jihva: "Mild white Ama coating at the posterior third (Sama Jihva)",
+    mutra: "Normal frequency (4-5 times/day), pale yellow, clear",
+    mala: "Irregular evacuation, tendency towards sluggishness (Asamyak Mala Pravritti)",
+    shabda: "Normal, clear acoustic resonance (Prakrita)",
+    sparsha: "Warm, slightly clammy palms during mental stress (Ushna-Snigdha)",
+    drik: "Normal sclera, mild sub-conjunctival pallor",
+    akriti: "Madhyama (Medium build, slight central abdominal adiposity)"
+  },
+  otherAssessments: "Srotas: Annavaha Srotas (Udara Shoola), Rasavaha & Medovaha Srotas (Hrid-Shoola). Rogamarga: Abhyantara (Internal) and Madhyama. Vyadhi Swabhava: Krichra Sadhya (Manageable with Ahara-Aushadha).",
   foodIntake: {
     breakfast: "Warm tea, idlis with mild sambar, no chilies",
     lunch: "Rice with moong dal, roasted ridge gourd, cumin buttermilk (Takra)",
@@ -262,16 +278,36 @@ export const INITIAL_AI_SUMMARY = {
   ],
   stomachSummary: {
     title: "AYURVEDIC CASE SUMMARY",
-    chiefComplaint: "Stomach pain",
+    chiefComplaint: "Stomach pain (Udara Shoola & Amlapitta)",
     duration: "2 weeks",
     location: "Upper abdomen",
-    associatedSymptoms: "Reduced appetite, bloating",
+    associatedSymptoms: "Reduced appetite, bloating, sour eructations",
     previousRecords: "Endoscopy shows antral erythema [Source: Max Healthcare, 2025-01-18]",
     previousMedications: "Pantoprazole 40 mg [Source: Max Healthcare]",
     ayurvedicHistory: "Agni-related complaints reported; Koshtha details recorded",
     source: "Patient voice + endoscopy report + prescription",
     confidence: "0.91",
     statusDraft: "Draft — Vaidya verification required",
+    // PART 1: GENERAL CASE HISTORY
+    generalHistory: {
+      chiefComplaint: "Stomach pain (Amlapitta & Udara Shoola)",
+      hpi: "Intermittent burning distress in epigastrium aggravated 30-45 mins post-prandial, with sour belching and fullness. Partially responsive to antacids; triggered by stress and irregular spicy meals.",
+      duration: "2 weeks acute flare-up (chronic 6 months)",
+      location: "Upper abdomen / Epigastric region",
+      associatedSymptoms: "Reduced appetite (Aruchi), abdominal bloating (Adhmana), nausea after fatty food",
+      pastHistory: "Mild antral gastritis on endoscopy; prior episode of dyspepsia in 2024",
+      previousRecords: "Endoscopy shows antral erythema [Source: Max Healthcare, 2025-01-18]",
+      currentMedications: "Tab. Pantoprazole 40 mg OD, Sukumaram Kashayam 15 ml BD",
+      allergies: "No known drug allergies (NKDA). Sensitive to red chilies & sour citrus",
+      familyHistory: "Mother had chronic hyperacidity & gastritis; Father had CAD",
+      personalHistory: "Sedentary software professional, irregular meal hours, non-smoker, occasional alcohol"
+    },
+    // PART 2: AYUSH / AYURVEDIC HISTORY
+    ayushHistory: {
+      dashavidha: "Prakriti: Pitta-Kapha • Vikriti: Pitta-Vataja in Koshtha • Sara: Madhyama • Samhanana: Madhyama • Satva: Madhyama • Ahara Shakti: Avara Jarana (Slow digestion) • Vaya: 38 Yrs",
+      aharaVihara: "Agni: Vishamagni/Mandagni • Koshtha: Madhyama with sluggish evacuation • Habit: Late dinners past 10 PM • Viruddha Ahara: Cold water with food, curd at night • Nidra: 6h disturbed by reflux • Manasika: High work stress (Chinta)",
+      otherAssessments: "Ashtavidha: Nadi 72 bpm (Pitta-Vata Gati), Jihva Sama (Coated posterior), Mala Vibandha, Mutra Pita-varna • Srotas: Annavaha & Purishavaha Srotas (Dushti: Amlika, Vidaha, Gaurava)"
+    },
     differentialOptions: [
       {
         id: "udara_shoola",
@@ -305,7 +341,7 @@ export const INITIAL_AI_SUMMARY = {
   },
   chestSummary: {
     title: "AYURVEDIC CASE SUMMARY",
-    chiefComplaint: "Chest pain",
+    chiefComplaint: "Chest pain (Hrid-Shoola / Retrosternal tightness)",
     duration: "3 weeks",
     location: "Retro-sternal / Left precordium",
     associatedSymptoms: "Exertional tightness, mild breathlessness, morning heaviness",
@@ -315,6 +351,26 @@ export const INITIAL_AI_SUMMARY = {
     source: "Patient voice + ECG report + cardiology prescription",
     confidence: "0.94",
     statusDraft: "Draft — Vaidya verification required",
+    // PART 1: GENERAL CASE HISTORY
+    generalHistory: {
+      chiefComplaint: "Chest pain (Exertional tightness & heaviness)",
+      hpi: "Constricting retro-sternal discomfort on exertion (walking up stairs, brisk walking) with morning lethargy and mild breathlessness. Relieved by rest.",
+      duration: "3 weeks",
+      location: "Retro-sternal / Left precordium radiating to upper back",
+      associatedSymptoms: "Exertional tightness, mild dyspnea on exertion, morning precordial heaviness",
+      pastHistory: "Atherogenic dyslipidemia, elevated fasting blood glucose (138 mg/dL)",
+      previousRecords: "12-Lead ECG: Normal Sinus Rhythm; Triglycerides 192 mg/dL, HDL 38 mg/dL [Fortis Escorts, 2025-01-14]",
+      currentMedications: "Tab. Atorvastatin 10 mg HS, Tab. Metformin 500 mg BD, Arjuna Ksheerapaka",
+      allergies: "No known drug allergies (NKDA)",
+      familyHistory: "Strong paternal history of early Coronary Artery Disease (CAD)",
+      personalHistory: "Sedentary lifestyle, high workplace stress, prolonged sitting, minimal exercise"
+    },
+    // PART 2: AYUSH / AYURVEDIC HISTORY
+    ayushHistory: {
+      dashavidha: "Prakriti: Pitta-Kapha • Vikriti: Kapha-Vataja in Hridya • Sara: Madhyama Meda & Rasa • Samhanana: Madhyama • Satva: Madhyama • Ahara Shakti: Impaired Dhatvagni • Vaya: 38 Yrs",
+      aharaVihara: "Agni: Mandagni with Dhatvagni Mandya • Koshtha: Krura tendency • Habit: High dairy & fried snacks • Viruddha Ahara: Cold drinks after fatty meals • Nidra: Daytime naps (Diva-swapna) • Manasika: Deadline stress",
+      otherAssessments: "Ashtavidha: Nadi 76 bpm (Mandagati, Kapha dominance), Jihva Alpa-lipta, Sparsha Ushna-Snigdha • Srotas: Rasavaha, Medovaha & Manovaha Srotas (Dushti: Hridrava, Gaurava, Srotorodha)"
+    },
     differentialOptions: [
       {
         id: "hrid_shoola",

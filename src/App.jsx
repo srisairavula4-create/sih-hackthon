@@ -405,6 +405,10 @@ export default function App() {
           const newMedsStr = newRec.extractedData.medications.map(m => `${m.name} ${m.dose}`).join(', ');
           updatedStomachSummary.previousMedications = `${updatedStomachSummary.previousMedications} + ${newMedsStr} [Source: ${newRec.institution}]`;
         }
+        if (updatedStomachSummary.generalHistory) {
+          updatedStomachSummary.generalHistory.previousRecords = updatedStomachSummary.previousRecords;
+          updatedStomachSummary.generalHistory.currentMedications = updatedStomachSummary.previousMedications;
+        }
       }
 
       const updatedChestSummary = {
@@ -430,6 +434,10 @@ export default function App() {
         if (newRec.extractedData?.medications && newRec.extractedData.medications.length > 0) {
           const newMedsStr = newRec.extractedData.medications.map(m => `${m.name} ${m.dose}`).join(', ');
           updatedChestSummary.previousMedications = `${updatedChestSummary.previousMedications} + ${newMedsStr} [Source: ${newRec.institution}]`;
+        }
+        if (updatedChestSummary.generalHistory) {
+          updatedChestSummary.generalHistory.previousRecords = updatedChestSummary.previousRecords;
+          updatedChestSummary.generalHistory.currentMedications = updatedChestSummary.previousMedications;
         }
       }
 

@@ -6,7 +6,14 @@ import {
   Clock,
   ShieldCheck, 
   Check, 
-  Edit3
+  Edit3,
+  Activity,
+  Heart,
+  Utensils,
+  Leaf,
+  FileText,
+  ShieldAlert,
+  UserCheck
 } from 'lucide-react';
 
 export const AyurvedicCaseSummaryCard = ({
@@ -17,16 +24,36 @@ export const AyurvedicCaseSummaryCard = ({
   // Pre-configured structured clinical data matching user's exact specification
   const defaultStomach = {
     title: "AYURVEDIC CASE SUMMARY",
-    chiefComplaint: "Stomach pain",
+    chiefComplaint: "Stomach pain (Udara Shoola & Amlapitta)",
     duration: "2 weeks",
-    location: "Upper abdomen",
-    associatedSymptoms: "Reduced appetite, bloating",
-    previousRecords: "Endoscopy shows antral erythema",
-    previousMedications: "Pantoprazole 40 mg",
+    location: "Upper abdomen / Epigastrium",
+    associatedSymptoms: "Reduced appetite, bloating, sour eructations",
+    previousRecords: "Endoscopy shows antral erythema [Source: Max Healthcare, 2025-01-18]",
+    previousMedications: "Pantoprazole 40 mg [Source: Max Healthcare]",
     ayurvedicHistory: "Agni-related complaints reported; Koshtha details recorded",
     source: "Patient voice + endoscopy report + prescription",
     confidence: "0.91",
     statusDraft: "Draft — Vaidya verification required",
+    // PART 1: GENERAL CASE HISTORY
+    generalHistory: {
+      chiefComplaint: "Stomach pain (Amlapitta & Udara Shoola)",
+      hpi: "Intermittent burning distress in epigastrium aggravated 30-45 mins post-prandial, with sour belching and abdominal fullness. Partially responsive to antacids; triggered by stress and irregular spicy meals.",
+      duration: "2 weeks acute flare-up (chronic 6 months)",
+      location: "Upper abdomen / Epigastric region",
+      associatedSymptoms: "Reduced appetite (Aruchi), abdominal bloating (Adhmana), nausea after fatty food",
+      pastHistory: "Mild antral gastritis on endoscopy; prior episode of dyspepsia in 2024",
+      previousRecords: "Endoscopy shows antral erythema [Source: Max Healthcare, 2025-01-18]",
+      currentMedications: "Tab. Pantoprazole 40 mg OD, Sukumaram Kashayam 15 ml BD",
+      allergies: "No known drug allergies (NKDA). Sensitive to red chilies & sour citrus",
+      familyHistory: "Mother had chronic hyperacidity & gastritis; Father had CAD",
+      personalHistory: "Sedentary software professional, irregular meal hours, non-smoker, occasional alcohol"
+    },
+    // PART 2: AYUSH / AYURVEDIC HISTORY
+    ayushHistory: {
+      dashavidha: "Prakriti: Pitta-Kapha • Vikriti: Pitta-Vataja in Koshtha • Sara: Madhyama • Samhanana: Madhyama • Satva: Madhyama • Ahara Shakti: Avara Jarana (Slow digestion) • Vaya: 38 Yrs",
+      aharaVihara: "Agni: Vishamagni/Mandagni • Koshtha: Madhyama with sluggish evacuation • Habit: Late dinners past 10 PM • Viruddha Ahara: Cold water with food, curd at night • Nidra: 6h disturbed by reflux • Manasika: High work stress (Chinta)",
+      otherAssessments: "Ashtavidha: Nadi 72 bpm (Pitta-Vata Gati), Jihva Sama (Coated posterior), Mala Vibandha, Mutra Pita-varna • Srotas: Annavaha & Purishavaha Srotas (Dushti: Amlika, Vidaha, Gaurava)"
+    },
     differentialOptions: [
       {
         id: "udara_shoola",
@@ -61,16 +88,36 @@ export const AyurvedicCaseSummaryCard = ({
 
   const defaultChest = {
     title: "AYURVEDIC CASE SUMMARY",
-    chiefComplaint: "Chest pain",
+    chiefComplaint: "Chest pain (Hrid-Shoola / Retrosternal tightness)",
     duration: "3 weeks",
     location: "Retro-sternal / Left precordium",
     associatedSymptoms: "Exertional tightness, mild breathlessness, morning heaviness",
-    previousRecords: "12-Lead ECG shows normal sinus rhythm; Triglycerides 192 mg/dL, HDL 38 mg/dL",
-    previousMedications: "Tab. Atorvastatin 10 mg, Tab. Metformin 500 mg",
+    previousRecords: "12-Lead ECG shows normal sinus rhythm; Triglycerides 192 mg/dL, HDL 38 mg/dL [Source: Fortis Escorts, 2025-01-14]",
+    previousMedications: "Tab. Atorvastatin 10 mg, Tab. Metformin 500 mg [Source: Fortis Escorts]",
     ayurvedicHistory: "Rasavaha & Medovaha Sroto-rodha reported; Dhatvagni Mandya recorded",
     source: "Patient voice + ECG report + cardiology prescription",
     confidence: "0.94",
     statusDraft: "Draft — Vaidya verification required",
+    // PART 1: GENERAL CASE HISTORY
+    generalHistory: {
+      chiefComplaint: "Chest pain (Exertional tightness & heaviness)",
+      hpi: "Constricting retro-sternal discomfort on exertion (walking up stairs, brisk walking) with morning lethargy and mild breathlessness. Relieved by rest.",
+      duration: "3 weeks",
+      location: "Retro-sternal / Left precordium radiating to upper back",
+      associatedSymptoms: "Exertional tightness, mild dyspnea on exertion, morning precordial heaviness",
+      pastHistory: "Atherogenic dyslipidemia, elevated fasting blood glucose (138 mg/dL)",
+      previousRecords: "12-Lead ECG: Normal Sinus Rhythm; Triglycerides 192 mg/dL, HDL 38 mg/dL [Fortis Escorts, 2025-01-14]",
+      currentMedications: "Tab. Atorvastatin 10 mg HS, Tab. Metformin 500 mg BD, Arjuna Ksheerapaka",
+      allergies: "No known drug allergies (NKDA)",
+      familyHistory: "Strong paternal history of early Coronary Artery Disease (CAD)",
+      personalHistory: "Sedentary lifestyle, high workplace stress, prolonged sitting, minimal exercise"
+    },
+    // PART 2: AYUSH / AYURVEDIC HISTORY
+    ayushHistory: {
+      dashavidha: "Prakriti: Pitta-Kapha • Vikriti: Kapha-Vataja in Hridya • Sara: Madhyama Meda & Rasa • Samhanana: Madhyama • Satva: Madhyama • Ahara Shakti: Impaired Dhatvagni • Vaya: 38 Yrs",
+      aharaVihara: "Agni: Mandagni with Dhatvagni Mandya • Koshtha: Krura tendency • Habit: High dairy & fried snacks • Viruddha Ahara: Cold drinks after fatty meals • Nidra: Daytime naps (Diva-swapna) • Manasika: Deadline stress",
+      otherAssessments: "Ashtavidha: Nadi 76 bpm (Mandagati, Kapha dominance), Jihva Alpa-lipta, Sparsha Ushna-Snigdha • Srotas: Rasavaha, Medovaha & Manovaha Srotas (Dushti: Hridrava, Gaurava, Srotorodha)"
+    },
     differentialOptions: [
       {
         id: "hrid_shoola",
@@ -241,60 +288,150 @@ export const AyurvedicCaseSummaryCard = ({
       {/* CARD BODY: EXACT STRUCTURED CASE SUMMARY */}
       <div className="p-4 space-y-3.5">
         
-        {/* Structured Field-by-Field Clinical Display */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-3.5 shadow-2xs space-y-2 font-sans">
+        {/* TWO CLEARLY SEPARATE PATIENT HISTORY SECTIONS */}
+        <div className="space-y-3">
           
-          <div className="space-y-1.5 text-xs">
-            <div className="flex flex-wrap items-baseline gap-1.5">
-              <span className="font-bold text-slate-900">Chief complaint:</span>
-              <span className="text-slate-800 font-medium">{data.chiefComplaint}</span>
-            </div>
-
-            <div className="flex flex-wrap items-baseline gap-1.5">
-              <span className="font-bold text-slate-900">Duration:</span>
-              <span className="text-slate-700">{data.duration}</span>
-            </div>
-
-            <div className="flex flex-wrap items-baseline gap-1.5">
-              <span className="font-bold text-slate-900">Location:</span>
-              <span className="text-slate-700">{data.location}</span>
-            </div>
-
-            <div className="flex flex-wrap items-baseline gap-1.5">
-              <span className="font-bold text-slate-900">Associated symptoms:</span>
-              <span className="text-slate-700">{data.associatedSymptoms}</span>
-            </div>
-
-            <div className="flex flex-wrap items-baseline gap-1.5">
-              <span className="font-bold text-slate-900">Previous records:</span>
-              <span className="text-slate-800 font-semibold bg-amber-50/70 px-1.5 py-0.5 rounded border border-amber-200 text-[11px]">
-                {data.previousRecords}
-              </span>
-            </div>
-
-            <div className="flex flex-wrap items-baseline gap-1.5">
-              <span className="font-bold text-slate-900">Previous medications:</span>
-              <span className="text-slate-800 font-semibold bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200 text-[11px]">
-                {data.previousMedications}
-              </span>
-            </div>
-
-            <div className="flex flex-wrap items-baseline gap-1.5">
-              <span className="font-bold text-slate-900">Ayurvedic history:</span>
-              <span className="text-slate-700">{data.ayurvedicHistory}</span>
-            </div>
-
-            <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-1.5 text-[11px] text-slate-500 font-mono">
-              <div>
-                <span className="font-bold text-slate-700 font-sans">Source: </span>
-                <span>{data.source}</span>
-              </div>
-              <div>
-                <span className="font-bold text-slate-700 font-sans">Status: </span>
-                <span className={isVerified ? 'text-emerald-700 font-bold' : 'text-rose-600 font-semibold'}>
-                  {isVerified ? `Verified (${selectedDiagnosis})` : data.statusDraft}
+          {/* SECTION 1: GENERAL CASE HISTORY */}
+          <div className="bg-slate-50/80 rounded-2xl border border-slate-200/90 p-3.5 shadow-2xs space-y-2">
+            <div className="flex items-center justify-between pb-1.5 border-b border-slate-200/80">
+              <div className="flex items-center gap-1.5">
+                <span className="p-1 rounded-lg bg-indigo-100 text-indigo-700">
+                  <Activity className="w-3.5 h-3.5" />
+                </span>
+                <span className="text-xs font-black uppercase tracking-wide text-slate-800 font-outfit">
+                  1. General Case History
                 </span>
               </div>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200/70 text-slate-700">
+                Conventional Clinical Intake
+              </span>
+            </div>
+
+            <div className="space-y-1.5 text-xs">
+              <div className="flex flex-wrap items-baseline gap-1.5">
+                <span className="font-bold text-slate-900">Chief Complaint:</span>
+                <span className="text-slate-800 font-semibold">{data.generalHistory?.chiefComplaint || data.chiefComplaint}</span>
+              </div>
+
+              {(data.generalHistory?.hpi) && (
+                <div className="flex flex-wrap items-baseline gap-1.5">
+                  <span className="font-bold text-slate-900">HPI & Progression:</span>
+                  <span className="text-slate-700 leading-relaxed">{data.generalHistory.hpi}</span>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-slate-700">
+                <div>
+                  <span className="font-bold text-slate-900">Duration: </span>
+                  <span>{data.generalHistory?.duration || data.duration}</span>
+                </div>
+                <div>
+                  <span className="font-bold text-slate-900">Location: </span>
+                  <span>{data.generalHistory?.location || data.location}</span>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-baseline gap-1.5">
+                <span className="font-bold text-slate-900">Associated Symptoms:</span>
+                <span className="text-slate-700">{data.generalHistory?.associatedSymptoms || data.associatedSymptoms}</span>
+              </div>
+
+              {(data.generalHistory?.pastHistory) && (
+                <div className="flex flex-wrap items-baseline gap-1.5">
+                  <span className="font-bold text-slate-900">Past Medical/Surgical History:</span>
+                  <span className="text-slate-700">{data.generalHistory.pastHistory}</span>
+                </div>
+              )}
+
+              <div className="flex flex-wrap items-baseline gap-1.5">
+                <span className="font-bold text-slate-900">Previous Records / Diagnostics:</span>
+                <span className="text-slate-800 font-semibold bg-amber-50/80 px-1.5 py-0.5 rounded border border-amber-200 text-[11px]">
+                  {data.generalHistory?.previousRecords || data.previousRecords}
+                </span>
+              </div>
+
+              <div className="flex flex-wrap items-baseline gap-1.5">
+                <span className="font-bold text-slate-900">Current Medications & Drugs:</span>
+                <span className="text-slate-800 font-semibold bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-[11px]">
+                  {data.generalHistory?.currentMedications || data.previousMedications}
+                </span>
+              </div>
+
+              {(data.generalHistory?.allergies) && (
+                <div className="flex flex-wrap items-baseline gap-1.5">
+                  <span className="font-bold text-slate-900">Drugs & Allergies (Asatmya):</span>
+                  <span className="text-rose-700 font-medium">{data.generalHistory.allergies}</span>
+                </div>
+              )}
+
+              {(data.generalHistory?.familyHistory || data.generalHistory?.personalHistory) && (
+                <div className="pt-1 border-t border-slate-200/60 grid grid-cols-1 sm:grid-cols-2 gap-1 text-[11px] text-slate-600">
+                  {data.generalHistory.familyHistory && (
+                    <div>
+                      <span className="font-bold text-slate-800">Family History: </span>
+                      <span>{data.generalHistory.familyHistory}</span>
+                    </div>
+                  )}
+                  {data.generalHistory.personalHistory && (
+                    <div>
+                      <span className="font-bold text-slate-800">Personal History: </span>
+                      <span>{data.generalHistory.personalHistory}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* SECTION 2: AYUSH / AYURVEDIC HISTORY */}
+          <div className="bg-emerald-50/40 rounded-2xl border border-emerald-200/90 p-3.5 shadow-2xs space-y-2">
+            <div className="flex items-center justify-between pb-1.5 border-b border-emerald-200/70">
+              <div className="flex items-center gap-1.5">
+                <span className="p-1 rounded-lg bg-emerald-100 text-emerald-800">
+                  <Leaf className="w-3.5 h-3.5" />
+                </span>
+                <span className="text-xs font-black uppercase tracking-wide text-emerald-950 font-outfit">
+                  2. AYUSH / Ayurvedic History
+                </span>
+              </div>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                Classical Samhita Framework
+              </span>
+            </div>
+
+            <div className="space-y-1.5 text-xs">
+              <div>
+                <span className="font-bold text-emerald-950">Dashavidha Pariksha (10-Fold Assessment): </span>
+                <span className="text-slate-700 leading-relaxed">{data.ayushHistory?.dashavidha || data.ayurvedicHistory}</span>
+              </div>
+
+              {data.ayushHistory?.aharaVihara && (
+                <div>
+                  <span className="font-bold text-emerald-950">Ahara & Vihara (Dietary Habits & Regimen): </span>
+                  <span className="text-slate-700 leading-relaxed">{data.ayushHistory.aharaVihara}</span>
+                </div>
+              )}
+
+              {data.ayushHistory?.otherAssessments && (
+                <div>
+                  <span className="font-bold text-emerald-950">Other Ayurvedic Assessments (Ashtavidha & Srotas): </span>
+                  <span className="text-slate-700 leading-relaxed">{data.ayushHistory.otherAssessments}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Source & Status Provenance Bar */}
+          <div className="pt-1 px-1 flex flex-wrap items-center justify-between gap-1.5 text-[11px] text-slate-500 font-mono">
+            <div>
+              <span className="font-bold text-slate-700 font-sans">Source: </span>
+              <span>{data.source}</span>
+            </div>
+            <div>
+              <span className="font-bold text-slate-700 font-sans">Status: </span>
+              <span className={isVerified ? 'text-emerald-700 font-bold' : 'text-rose-600 font-semibold'}>
+                {isVerified ? `Verified (${selectedDiagnosis})` : data.statusDraft}
+              </span>
             </div>
           </div>
 
