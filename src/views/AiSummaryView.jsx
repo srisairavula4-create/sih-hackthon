@@ -8,11 +8,7 @@ import {
   VolumeX, 
   ArrowRight, 
   ShieldCheck, 
-  Pill, 
-  Flame, 
-  Check, 
-  AlertCircle, 
-  Utensils 
+  AlertCircle 
 } from 'lucide-react';
 import { AyurvedicCaseSummaryCard } from '../components/AyurvedicCaseSummaryCard';
 import { INITIAL_AI_SUMMARY } from '../types/data';
@@ -39,30 +35,6 @@ export const AiSummaryView = ({
       ...INITIAL_AI_SUMMARY.chestSummary, 
       ...((aiSummary && aiSummary.chestSummary) || {}) 
     },
-    rogaNidana: { 
-      ...INITIAL_AI_SUMMARY.rogaNidana, 
-      ...((aiSummary && aiSummary.rogaNidana) || {}) 
-    },
-    pathyaApathya: {
-      pathyaAhara: (aiSummary?.pathyaApathya?.pathyaAhara?.length) 
-        ? aiSummary.pathyaApathya.pathyaAhara 
-        : INITIAL_AI_SUMMARY.pathyaApathya.pathyaAhara,
-      pathyaVihara: (aiSummary?.pathyaApathya?.pathyaVihara?.length) 
-        ? aiSummary.pathyaApathya.pathyaVihara 
-        : INITIAL_AI_SUMMARY.pathyaApathya.pathyaVihara,
-      apathyaAhara: (aiSummary?.pathyaApathya?.apathyaAhara?.length) 
-        ? aiSummary.pathyaApathya.apathyaAhara 
-        : INITIAL_AI_SUMMARY.pathyaApathya.apathyaAhara,
-      apathyaVihara: (aiSummary?.pathyaApathya?.apathyaVihara?.length) 
-        ? aiSummary.pathyaApathya.apathyaVihara 
-        : INITIAL_AI_SUMMARY.pathyaApathya.apathyaVihara
-    },
-    prescribedFormulations: (aiSummary?.prescribedFormulations?.length)
-      ? aiSummary.prescribedFormulations
-      : INITIAL_AI_SUMMARY.prescribedFormulations,
-    foodIntakeAnalysis: (aiSummary?.foodIntakeAnalysis)
-      ? aiSummary.foodIntakeAnalysis
-      : INITIAL_AI_SUMMARY.foodIntakeAnalysis,
     conflicts: (aiSummary?.conflicts?.length)
       ? aiSummary.conflicts
       : INITIAL_AI_SUMMARY.conflicts
@@ -93,10 +65,10 @@ export const AiSummaryView = ({
                 </span>
               </div>
               <h1 className="text-xl sm:text-2xl font-black tracking-tight font-outfit">
-                Comprehensive Ayurvedic Clinical Summary & Treatment Protocol
+                Comprehensive Ayurvedic Clinical Summary & Case Intake
               </h1>
               <p className="text-xs text-emerald-100 mt-1 max-w-2xl">
-                Synthesizing Patient Intake, Dashavidha Pariksha, Ahara-Vihara parameters, and Laboratory Biomarkers
+                Synthesizing Patient Intake, Diagnostic Reports, and Longitudinal ABDM Health Records
               </p>
             </div>
 
@@ -231,270 +203,6 @@ export const AiSummaryView = ({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <AyurvedicCaseSummaryCard conditionType="stomach_pain" customSummary={summary.stomachSummary} />
           <AyurvedicCaseSummaryCard conditionType="chest_pain" customSummary={summary.chestSummary} />
-        </div>
-      </div>
-
-      {/* SECTION 1: ROGA NIDANA (AYURVEDIC ETIOPATHOGENESIS) */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-xs space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-          <div>
-            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-              Roga Nidana & Samprapti Ghataka (Ayurvedic Diagnosis)
-            </h2>
-            <p className="text-xs text-slate-500">
-              Etiopathogenesis formulated from Classical Ayurvedic Samhitas
-            </p>
-          </div>
-
-          <span className="text-xs font-mono font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-            {summary.rogaNidana?.sadhyasadhyata || 'Krichra Sadhya'}
-          </span>
-        </div>
-
-        {/* Diagnosis Matrix Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Primary Vyadhi (Disease)</p>
-            <p className="text-sm font-black text-slate-900 mt-1">{summary.rogaNidana?.vyadhi}</p>
-          </div>
-
-          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Dosha Involvement</p>
-            <p className="text-xs font-bold text-emerald-800 mt-1">{summary.rogaNidana?.dosha}</p>
-          </div>
-
-          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Dushya (Tissues Implicated)</p>
-            <p className="text-xs font-bold text-amber-800 mt-1">{summary.rogaNidana?.dushya}</p>
-          </div>
-
-          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Agni State</p>
-            <p className="text-xs font-bold text-slate-800 mt-1">{summary.rogaNidana?.agni}</p>
-          </div>
-
-          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Ama Status (Endotoxins)</p>
-            <p className="text-xs font-bold text-rose-700 mt-1">{summary.rogaNidana?.ama}</p>
-          </div>
-
-          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Srotas Affected</p>
-            <p className="text-xs font-bold text-slate-800 mt-1">{summary.rogaNidana?.srotas}</p>
-          </div>
-        </div>
-
-        {/* Chikitsa Sutra Banner */}
-        <div className="p-4 rounded-2xl bg-teal-50/70 border border-teal-200 space-y-1">
-          <p className="text-xs font-bold uppercase tracking-wider text-teal-900">
-            Chikitsa Sutra (Therapeutic Management Principle)
-          </p>
-          <p className="text-xs text-teal-800 leading-relaxed font-medium">
-            {summary.chikitsaSutra}
-          </p>
-        </div>
-      </div>
-
-      {/* SECTION 2: AI FOOD INTAKE & DIETARY ANALYSIS (AHARA PARIKSHA) */}
-      {summary.foodIntakeAnalysis && (
-        <div className="bg-white rounded-3xl border border-emerald-200/90 p-5 sm:p-6 shadow-xs space-y-4 relative overflow-hidden">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="p-1.5 rounded-lg bg-amber-100 text-amber-800">
-                  <Utensils className="w-4 h-4" />
-                </span>
-                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-                  AI Food Intake & Ahara Analysis (Dietary Etiology)
-                </h2>
-              </div>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Correlates patient's logged meals with Dosha aggravation & Dhatvagni
-              </p>
-            </div>
-
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 self-start sm:self-auto">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-              Dynamic Ingestion
-            </span>
-          </div>
-
-          {/* Meals Summary Banner */}
-          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-              Patient Logged Meals Analyzed by AI
-            </p>
-            <p className="text-xs font-semibold text-slate-800 leading-relaxed">
-              {summary.foodIntakeAnalysis.loggedMealsSummary}
-            </p>
-          </div>
-
-          {/* 3-Column Analysis Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="p-4 rounded-2xl bg-rose-50/50 border border-rose-200 space-y-2.5">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-rose-800 uppercase tracking-wider">
-                <AlertCircle className="w-4 h-4 text-rose-600" />
-                Detected Ahara Triggers (Nidana)
-              </div>
-              <ul className="space-y-1.5">
-                {(summary.foodIntakeAnalysis.primaryTriggers || []).map((trigger, idx) => (
-                  <li key={idx} className="text-xs text-rose-950 flex items-start gap-1.5 leading-snug">
-                    <span className="text-rose-500 font-bold">•</span>
-                    <span>{trigger}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-amber-50/50 border border-amber-200 space-y-2.5">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-amber-800 uppercase tracking-wider">
-                <Flame className="w-4 h-4 text-amber-600" />
-                Agni & Dosha Impact
-              </div>
-              <p className="text-xs text-amber-950 leading-relaxed">
-                {summary.foodIntakeAnalysis.doshaImpact}
-              </p>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-emerald-50/50 border border-emerald-200 space-y-2.5">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-800 uppercase tracking-wider">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                Corrective Diet Modification
-              </div>
-              <p className="text-xs text-emerald-950 leading-relaxed">
-                {summary.foodIntakeAnalysis.dietaryActionPlan}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* SECTION 3: CLASSICAL AYURVEDIC FORMULATIONS TABLE */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-xs space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-          <div>
-            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-              <Pill className="w-4 h-4 text-emerald-600" />
-              Suggested Classical Formulations (Aushadha Yojana)
-            </h2>
-            <p className="text-xs text-slate-500">
-              Evidence-based classical Ayurvedic medicinal protocol
-            </p>
-          </div>
-          <span className="text-xs text-slate-400 font-mono">
-            {(summary.prescribedFormulations || []).length} Active Formulations
-          </span>
-        </div>
-
-        <div className="overflow-x-auto border border-slate-200 rounded-2xl">
-          <table className="min-w-full divide-y divide-slate-200 text-xs">
-            <thead className="bg-slate-50 text-slate-600 font-semibold">
-              <tr>
-                <th className="px-4 py-3 text-left">Formulation & Ingredients</th>
-                <th className="px-3 py-3 text-left">Dosage & Frequency</th>
-                <th className="px-3 py-3 text-left">Timing & Anupana</th>
-                <th className="px-4 py-3 text-left">Clinical & Classical Rationale</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 bg-white">
-              {(summary.prescribedFormulations || []).map((herb) => (
-                <tr key={herb.id} className="hover:bg-slate-50/60">
-                  <td className="px-4 py-3 align-top">
-                    <p className="font-bold text-slate-900 text-xs">{herb.name}</p>
-                    <p className="text-[11px] text-slate-500 mt-0.5">{herb.ingredients}</p>
-                  </td>
-                  <td className="px-3 py-3 align-top font-mono text-slate-800">
-                    <p className="font-bold">{herb.dose}</p>
-                    <p className="text-[11px] text-slate-500">{herb.frequency}</p>
-                  </td>
-                  <td className="px-3 py-3 align-top text-slate-700">
-                    <p className="font-medium">{herb.timing}</p>
-                    <p className="text-[11px] text-emerald-700 font-semibold mt-0.5">
-                      Vehicle: {herb.anupana}
-                    </p>
-                  </td>
-                  <td className="px-4 py-3 align-top text-slate-600 text-[11px] leading-relaxed">
-                    {herb.rationale}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* SECTION 4: PATHYA & APATHYA (DIET & LIFESTYLE REGIMEN) */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-xs space-y-4">
-        <div className="border-b border-slate-100 pb-3">
-          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-            Pathya & Apathya (Do's and Don'ts for Patient Compliance)
-          </h2>
-          <p className="text-xs text-slate-500">
-            Nutritional and behavioral prescription strictly tailored to pacify Kapha and clear Medovaha Srotas
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Pathya (Recommended) */}
-          <div className="p-4 rounded-2xl bg-emerald-50/50 border border-emerald-200 space-y-3">
-            <div className="flex items-center gap-2 text-emerald-800 font-bold text-xs uppercase tracking-wider">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              Pathya Ahara & Vihara (Wholesome / Recommended)
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-xs font-semibold text-emerald-900">Dietary (Ahara):</p>
-              <ul className="space-y-1 text-xs text-slate-700">
-                {(summary.pathyaApathya?.pathyaAhara || []).map((item, idx) => (
-                  <li key={idx} className="flex items-start gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <p className="text-xs font-semibold text-emerald-900 pt-2">Lifestyle (Vihara):</p>
-              <ul className="space-y-1 text-xs text-slate-700">
-                {(summary.pathyaApathya?.pathyaVihara || []).map((item, idx) => (
-                  <li key={idx} className="flex items-start gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* Apathya (Prohibited) */}
-          <div className="p-4 rounded-2xl bg-rose-50/50 border border-rose-200 space-y-3">
-            <div className="flex items-center gap-2 text-rose-800 font-bold text-xs uppercase tracking-wider">
-              <AlertCircle className="w-4 h-4 text-rose-600" />
-              Apathya Ahara & Vihara (Unwholesome / Prohibited)
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-xs font-semibold text-rose-900">Dietary (Ahara):</p>
-              <ul className="space-y-1 text-xs text-slate-700">
-                {(summary.pathyaApathya?.apathyaAhara || []).map((item, idx) => (
-                  <li key={idx} className="flex items-start gap-1.5">
-                    <span className="text-rose-500 font-bold text-xs mt-0.5 flex-shrink-0">✕</span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <p className="text-xs font-semibold text-rose-900 pt-2">Lifestyle (Vihara):</p>
-              <ul className="space-y-1 text-xs text-slate-700">
-                {(summary.pathyaApathya?.apathyaVihara || []).map((item, idx) => (
-                  <li key={idx} className="flex items-start gap-1.5">
-                    <span className="text-rose-500 font-bold text-xs mt-0.5 flex-shrink-0">✕</span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
         </div>
       </div>
 
