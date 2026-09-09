@@ -289,6 +289,8 @@ export default function App() {
       sourceFile: newRec.fileName,
       institution: newRec.institution,
       extractedData: newRec.extractedData,
+      isReviewRequired: newRec.isReviewRequired || false,
+      reviewReason: newRec.reviewReason || null,
       isNew: true
     };
 
@@ -398,7 +400,7 @@ export default function App() {
       };
 
       if (isStomach) {
-        const newRecordSnippet = `${newRec.title}: ${newRec.extractedData?.clinicalImpression || 'Verified findings'} [Source: ${newRec.institution}, ${newRec.date}]`;
+        const newRecordSnippet = `${newRec.title}: ${newRec.extractedData?.extractedFacts || newRec.extractedData?.clinicalImpression || 'Verified findings'} [Source: ${newRec.institution}, ${newRec.date}]`;
         updatedStomachSummary.previousRecords = `${updatedStomachSummary.previousRecords} • ${newRecordSnippet}`;
         updatedStomachSummary.source = `${updatedStomachSummary.source} + ${newRec.title} (${newRec.fileName})`;
         if (newRec.extractedData?.medications && newRec.extractedData.medications.length > 0) {
@@ -428,7 +430,7 @@ export default function App() {
       };
 
       if (isChest) {
-        const newRecordSnippet = `${newRec.title}: ${newRec.extractedData?.clinicalImpression || 'Verified findings'} [Source: ${newRec.institution}, ${newRec.date}]`;
+        const newRecordSnippet = `${newRec.title}: ${newRec.extractedData?.extractedFacts || newRec.extractedData?.clinicalImpression || 'Verified findings'} [Source: ${newRec.institution}, ${newRec.date}]`;
         updatedChestSummary.previousRecords = `${updatedChestSummary.previousRecords} • ${newRecordSnippet}`;
         updatedChestSummary.source = `${updatedChestSummary.source} + ${newRec.title} (${newRec.fileName})`;
         if (newRec.extractedData?.medications && newRec.extractedData.medications.length > 0) {

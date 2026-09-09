@@ -429,12 +429,32 @@ export const TimelineView = ({
 
                         {isExpanded && (
                           <div className="mt-3 pt-3 border-t border-slate-100 space-y-2 text-xs animate-fadeIn">
-                            <div className="p-2 bg-slate-50 rounded-xl border border-slate-200/70 text-[11px] text-slate-600">
-                              <p className="font-semibold text-slate-800 mb-0.5">Clinical Note:</p>
-                              <p>
-                                {isStomach 
-                                  ? "Correlates with functional dyspepsia and delayed gastric emptying. Demonstrates progressive recovery of Jatharagni."
-                                  : "Correlates with atherogenic dyslipidemia and vascular channel congestion. Arjuna Ksheerapaka actively supports tone."}
+                            {item.isReviewRequired && (
+                              <div className="p-2 bg-amber-50 rounded-xl border border-amber-200 text-[11px] text-amber-900 flex items-center gap-1.5 font-semibold">
+                                <span className="w-2 h-2 rounded-full bg-amber-600 animate-pulse flex-shrink-0" />
+                                <span>Review Required: Clinical findings confirmed with marginal OCR clarity.</span>
+                              </div>
+                            )}
+
+                            {item.extractedData?.extractedFacts ? (
+                              <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200/80 text-[11px] space-y-1">
+                                <p className="font-bold text-slate-900 uppercase tracking-wide text-[10px]">
+                                  Extracted Clinical Facts (Objective):
+                                </p>
+                                <p className="text-slate-700">{item.extractedData.extractedFacts}</p>
+                              </div>
+                            ) : null}
+
+                            <div className="p-2.5 bg-emerald-50/60 rounded-xl border border-emerald-200/70 text-[11px] space-y-1">
+                              <p className="font-bold text-emerald-950 uppercase tracking-wide text-[10px]">
+                                Ayurvedic Clinical Correlation (Advisory):
+                              </p>
+                              <p className="text-slate-700">
+                                {item.extractedData?.ayurvedicInterpretation || (
+                                  isStomach 
+                                    ? "Correlates with functional dyspepsia and delayed gastric emptying. Demonstrates progressive recovery of Jatharagni."
+                                    : "Correlates with atherogenic dyslipidemia and vascular channel congestion. Arjuna Ksheerapaka actively supports tone."
+                                )}
                               </p>
                             </div>
 
@@ -682,12 +702,32 @@ export const TimelineView = ({
 
                       {isExpanded && (
                         <div className="mt-4 pt-4 border-t border-slate-100 space-y-3 animate-fadeIn">
-                          <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/70 text-xs text-slate-600">
-                            <p className="font-semibold text-slate-800 mb-1">AI Clinical Assessment Note:</p>
-                            <p>
-                              {isStomach 
-                                ? "Correlates with functional dyspepsia and delayed gastric emptying. Demonstrates progressive recovery of Jatharagni with Sukumaram Kashayam."
-                                : "Correlates with atherogenic dyslipidemia and vascular channel congestion. Arjuna Ksheerapaka actively supports myocardial tone."}
+                          {item.isReviewRequired && (
+                            <div className="p-2.5 bg-amber-50 rounded-2xl border border-amber-200 text-xs text-amber-900 flex items-center gap-2 font-semibold">
+                              <span className="w-2.5 h-2.5 rounded-full bg-amber-600 animate-pulse flex-shrink-0" />
+                              <span>Review Required: Clinical findings identified with partial/faint OCR. Please confirm values.</span>
+                            </div>
+                          )}
+
+                          {item.extractedData?.extractedFacts && (
+                            <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 text-xs space-y-1">
+                              <p className="font-bold text-slate-900 uppercase tracking-wide text-[11px]">
+                                Part A: Extracted Clinical Facts (Objective):
+                              </p>
+                              <p className="text-slate-700">{item.extractedData.extractedFacts}</p>
+                            </div>
+                          )}
+
+                          <div className="p-3 bg-emerald-50/60 rounded-2xl border border-emerald-200/70 text-xs space-y-1">
+                            <p className="font-bold text-emerald-950 uppercase tracking-wide text-[11px]">
+                              Part B: Ayurvedic Clinical Correlation (Advisory):
+                            </p>
+                            <p className="text-slate-700">
+                              {item.extractedData?.ayurvedicInterpretation || (
+                                isStomach 
+                                  ? "Correlates with functional dyspepsia and delayed gastric emptying. Demonstrates progressive recovery of Jatharagni with Sukumaram Kashayam."
+                                  : "Correlates with atherogenic dyslipidemia and vascular channel congestion. Arjuna Ksheerapaka actively supports myocardial tone."
+                              )}
                             </p>
                           </div>
 

@@ -57,6 +57,7 @@ export const SAMPLE_OLD_RECORDS = [
         { name: "Gallbladder & Liver", value: "No Calculi, Normal Caliber", range: "Normal", status: "Normal" }
       ],
       clinicalImpression: "Chronic functional dyspepsia and mild non-erosive gastritis with delayed gastric emptying.",
+      extractedFacts: "Endoscopy: Mild antral erythema & superficial erosion. H. Pylori: Negative. Gastric motility: Delayed transit.",
       ayurvedicCorrelation: "Pitta-Vataja Udara Shoola and Amlapitta secondary to Jatharagni Mandya."
     }
   },
@@ -80,6 +81,7 @@ export const SAMPLE_OLD_RECORDS = [
         { name: "Avipattikar Churna", dose: "3 grams", frequency: "At bedtime with lukewarm water", duration: "Ongoing" }
       ],
       clinicalImpression: "Gastric mucosal protective regimen with Deepana-Pachana herbs for abdominal discomfort.",
+      extractedFacts: "Rx: Tab. Pantoprazole 40 mg OD, Sukumaram Kashayam 15 ml BD, Avipattikar Churna 3g HS.",
       ayurvedicCorrelation: "Pitta Shamana and Vatanulomana addressing Kosthagata Ama."
     }
   },
@@ -105,6 +107,7 @@ export const SAMPLE_OLD_RECORDS = [
         { name: "Troponin-I (Cardiac Marker)", value: "0.01 ng/mL", range: "< 0.04 ng/mL", status: "Normal" }
       ],
       clinicalImpression: "Non-cardiac exertional chest discomfort with atherogenic dyslipidemia and impaired fasting glucose.",
+      extractedFacts: "ECG: Normal Sinus Rhythm. Triglycerides: 192 mg/dL (High). HDL: 38 mg/dL (Low). Fasting Glucose: 138 mg/dL (Elevated). Troponin-I: 0.01 ng/mL (Normal).",
       ayurvedicCorrelation: "Kaphaja-Vataja Hrid-Shoola with Medovaha Srotorodha without acute cardiac necrosis."
     }
   },
@@ -128,6 +131,7 @@ export const SAMPLE_OLD_RECORDS = [
         { name: "Arjuna Ksheerapaka Churna", dose: "3 grams boiled in milk/water", frequency: "Twice daily after food", duration: "3 Months" }
       ],
       clinicalImpression: "Cardioprotective lipid-lowering therapy; advised daily 30-min brisk walk and stress reduction.",
+      extractedFacts: "Rx: Tab. Atorvastatin 10 mg HS, Tab. Metformin HCl 500 mg BD, Arjuna Ksheerapaka Churna 3g BD.",
       ayurvedicCorrelation: "Hridya Rasayana (Arjuna) strengthening myocardial endurance and clearing vascular Ama."
     }
   }
@@ -144,7 +148,11 @@ export const INITIAL_TIMELINE = [
     badgeColor: "amber",
     summary: "Sukumaram Kashayam, Avipattikar Churna & Pantoprazole prescribed for gastric pain and burning sour eructations.",
     keyValues: ["Pantoprazole 40mg", "Sukumaram Kashayam", "Avipattikar 3g"],
-    sourceFile: "stomach_pain_prescription.jpg"
+    sourceFile: "stomach_pain_prescription.jpg",
+    extractedData: {
+      extractedFacts: "Rx: Tab. Pantoprazole 40 mg OD, Sukumaram Kashayam 15 ml BD, Avipattikar Churna 3g HS.",
+      ayurvedicInterpretation: "Deepana-Pachana and Vatanulomana addressing Kosthagata Ama."
+    }
   },
   {
     id: "TIME-STOMACH-01",
@@ -156,7 +164,11 @@ export const INITIAL_TIMELINE = [
     badgeColor: "amber",
     summary: "Mild antral gastritis observed with sluggish gastric emptying. H. Pylori negative.",
     keyValues: ["Antral Erythema", "Delayed Motility", "H. Pylori Negative"],
-    sourceFile: "stomach_usg_endoscopy_report.pdf"
+    sourceFile: "stomach_usg_endoscopy_report.pdf",
+    extractedData: {
+      extractedFacts: "Endoscopy: Mild antral erythema & erosion. H. Pylori: Negative. Gastric Motility: Delayed transit.",
+      ayurvedicInterpretation: "Correlates with Jatharagni Mandya leading to Kosthagata Ama and Pitta-Vataja Amlapitta."
+    }
   },
   {
     id: "TIME-CHEST-02",
@@ -168,7 +180,11 @@ export const INITIAL_TIMELINE = [
     badgeColor: "teal",
     summary: "Cardioprotective lipid-lowering regimen: Atorvastatin 10mg + Metformin 500mg with Arjuna Ksheerapaka.",
     keyValues: ["Atorvastatin 10mg", "Metformin 500mg", "Arjuna Ksheerapaka"],
-    sourceFile: "chest_pain_cardiac_prescription.jpg"
+    sourceFile: "chest_pain_cardiac_prescription.jpg",
+    extractedData: {
+      extractedFacts: "Rx: Tab. Atorvastatin 10 mg HS, Tab. Metformin HCl 500 mg BD, Arjuna Ksheerapaka Churna 3g BD.",
+      ayurvedicInterpretation: "Hridya Rasayana (Arjuna) strengthening myocardial endurance and clearing vascular Ama."
+    }
   },
   {
     id: "TIME-CHEST-01",
@@ -180,7 +196,11 @@ export const INITIAL_TIMELINE = [
     badgeColor: "emerald",
     summary: "ECG normal sinus rhythm. Serum Triglycerides elevated at 192 mg/dL. Troponin-I normal.",
     keyValues: ["ECG: Normal Sinus", "Triglycerides: 192 mg/dL", "Troponin-I: 0.01"],
-    sourceFile: "chest_pain_ecg_lipid_report.pdf"
+    sourceFile: "chest_pain_ecg_lipid_report.pdf",
+    extractedData: {
+      extractedFacts: "ECG: Normal Sinus Rhythm. Triglycerides: 192 mg/dL (High). HDL: 38 mg/dL (Low). Troponin-I: 0.01 ng/mL (Normal).",
+      ayurvedicInterpretation: "Kaphaja-Vataja Hrid-Shoola with Medovaha Srotorodha without acute cardiac necrosis."
+    }
   }
 ];
 
